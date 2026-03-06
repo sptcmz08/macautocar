@@ -155,7 +155,8 @@
                         <tr class="border-t-2 border-gray-200">
                             <td class="text-sm font-bold text-gray-800 py-3">รวมค่าปรับสภาพ</td>
                             <td class="text-sm font-bold text-orange-600 py-3 text-right">
-                                {{ number_format($refurbCost, 0) }} บาท</td>
+                                {{ number_format($refurbCost, 0) }} บาท
+                            </td>
                         </tr>
                     </tfoot>
                 </table>
@@ -199,7 +200,8 @@
                         <span class="text-sm font-bold text-blue-600">= {{ number_format($soldPrice, 0) }} บาท</span>
                     </div>
                     <div class="text-xs text-gray-400 mt-1">ขายวันที่
-                        {{ $car->sold_date ? $car->sold_date->format('d/m/Y') : '-' }}</div>
+                        {{ $car->sold_date ? $car->sold_date->format('d/m/Y') : '-' }}
+                    </div>
                 @elseif(!$sellingPrice)
                     <p class="text-sm text-gray-400 py-1.5">— ยังไม่ได้ตั้งราคาขาย —</p>
                 @endif
@@ -261,7 +263,8 @@
                     <div>
                         <div class="text-sm font-medium text-gray-700">ซื้อเข้ามา</div>
                         <div class="text-xs text-gray-400">
-                            {{ $car->purchase_date ? $car->purchase_date->format('d/m/Y') : '-' }}</div>
+                            {{ $car->purchase_date ? $car->purchase_date->format('d/m/Y') : '-' }}
+                        </div>
                     </div>
                 </div>
                 @if($isSold && $car->sold_date)
@@ -275,7 +278,8 @@
                         </div>
                     </div>
                     <div class="text-xs text-gray-400 ml-11">อยู่ในสต็อก
-                        {{ $car->purchase_date->diffInDays($car->sold_date) }} วัน</div>
+                        {{ (int) $car->purchase_date->diffInDays($car->sold_date) }} วัน
+                    </div>
                 @else
                     <div class="flex items-center gap-3">
                         <div
@@ -284,7 +288,8 @@
                         <div>
                             <div class="text-sm font-medium text-gray-700">อยู่ในสต็อก</div>
                             <div class="text-xs text-gray-400">
-                                {{ $car->purchase_date ? $car->purchase_date->diffInDays(now()) : 0 }} วันแล้ว</div>
+                                {{ $car->purchase_date ? (int) $car->purchase_date->diffInDays(now()) : 0 }} วันแล้ว
+                            </div>
                         </div>
                     </div>
                 @endif

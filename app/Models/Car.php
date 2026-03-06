@@ -24,6 +24,7 @@ class Car extends Model
         'sold_price',
         'is_profit_stock',
         'branch_id',
+        'notes',
     ];
 
     protected $casts = [

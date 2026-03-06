@@ -1355,6 +1355,9 @@
                                     @if($car->license_plate)
                                         <div class="text-xs text-blue-500 font-medium mt-0.5">🔖 {{ $car->license_plate }}</div>
                                     @endif
+                                    @if($car->notes)
+                                        <div class="text-xs text-amber-600 font-medium mt-0.5">📝 {{ $car->notes }}</div>
+                                    @endif
                                 </td>
 
                                 <!-- 3. License -->
@@ -1468,7 +1471,7 @@
         </div>
 
         <script>
-         (fun                          ction() {
+                                            (fun                          ction() {
             const ITEMS_PER_PAGE = 10;
             let currentPage = 1;
             let isPaginating = false;
@@ -3155,6 +3158,14 @@
                         </div>
                     </div>
 
+                    <!-- Notes -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">📝 หมายเหตุ</label>
+                        <input type="text" name="notes"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                            placeholder="เช่น ตอนเดียวเจ๊พัช, รถลูกค้าฝาก">
+                    </div>
+
                     <!-- Branch Selection -->
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">🏢 สาขา</label>
@@ -3752,7 +3763,7 @@
     <!-- Car Edit Modals (one for each car) -->
     @foreach($cars as $car)
         @php 
-                                                                                            $totalCost = $car->total_cost;
+                                                                                                    $totalCost = $car->total_cost;
             $expectedProfit = $car->selling_price ? ($car->selling_price - $totalCost) : 0;
         @endphp
         <div id="editCarModal{{ $car->id }}"
@@ -3836,6 +3847,14 @@
                                 <option value="{{ $branch->id }}" {{ $car->branch_id == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <!-- Notes -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">📝 หมายเหตุ</label>
+                        <input type="text" name="notes" value="{{ $car->notes }}"
+                            class="w-full bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-sm"
+                            placeholder="เช่น ตอนเดียวเจ๊พัช, รถลูกค้าฝาก">
                     </div>
 
                     <!-- Refurbishment Items Section -->

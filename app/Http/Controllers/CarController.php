@@ -38,6 +38,7 @@ class CarController extends Controller
             'refurbishment_cost' => $request->refurbishment_cost ?? 0,
             'selling_price' => $request->selling_price,
             'branch_id' => $request->branch_id ?: null,
+            'notes' => $request->notes,
             'status' => 'stock',
         ]);
 
@@ -71,7 +72,7 @@ class CarController extends Controller
             'license_plate.unique' => 'เลขทะเบียนนี้มีในระบบแล้ว',
         ]);
 
-        $data = $request->only(['color', 'license_plate', 'purchase_date', 'purchase_price', 'selling_price']);
+        $data = $request->only(['color', 'license_plate', 'purchase_date', 'purchase_price', 'selling_price', 'notes']);
         $data['branch_id'] = $request->branch_id ?: null;
         if ($request->has('transmission')) {
             $data['transmission'] = $request->transmission;

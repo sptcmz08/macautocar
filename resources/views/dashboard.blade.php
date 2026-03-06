@@ -1489,10 +1489,9 @@
         </div>
 
         <script>
-                                                 (f                                un                          ction() {
+        (function() {
             const ITEMS_PER_PAGE = 10;
             let currentPage = 1;
-            let isPaginating = false;
 
             function getAllDataRows() {
                 const tbody = document.querySelector('#carTable tbody');
@@ -1501,26 +1500,20 @@
             }
 
             function renderPagination() {
-                isPaginating = true;
                 const allRows = getAllDataRows();
-                const visibleRows = allRows.filter(r => !r.classList.contains('search-hidden') && !r.classList.contains('filter-hidden'));
-                const totalVisible = visibleRows.length;
+                // Rows that are NOT hidden by filters (check for 'hidden' class used by filter buttons)
+                const filteredRows = allRows.filter(r => !r.classList.contains('hidden'));
+                const totalVisible = filteredRows.length;
                 const totalPages = Math.ceil(totalVisible / ITEMS_PER_PAGE);
                 if (currentPage > totalPages) currentPage = totalPages || 1;
 
-                // Show/hide rows
-                let visibleIndex = 0;
-                allRows.forEach(row => {
-                    if (row.classList.contains('search-hidden') || row.classList.contains('filter-hidden')) {
-                        row.style.display = 'none';
-                        return;
-                    }
-                    visibleIndex++;
-                    const page = Math.ceil(visibleIndex / ITEMS_PER_PAGE);
+                // Paginate only filtered rows
+                filteredRows.forEach((row, idx) => {
+                    const page = Math.ceil((idx + 1) / ITEMS_PER_PAGE);
                     row.style.display = (page === currentPage) ? '' : 'none';
                 });
 
-                // Update info
+                // Update info text
                 const from = totalVisible > 0 ? ((currentPage - 1) * ITEMS_PER_PAGE) + 1 : 0;
                 const to = Math.min(currentPage * ITEMS_PER_PAGE, totalVisible);
                 document.getElementById('pagShowFrom').textContent = from;
@@ -1531,10 +1524,7 @@
                 const btnContainer = document.getElementById('pagButtons');
                 btnContainer.innerHTML = '';
 
-                if (totalPages <= 1) {
-                    isPaginating = false;
-                    return;
-                }
+                if (totalPages <= 1) return;
 
                 const btnClass = 'px-3 py-1.5 text-sm rounded-lg transition-all duration-200 font-medium';
                 const activeClass = btnClass + ' bg-blue-500 text-white shadow-md';
@@ -1546,25 +1536,27 @@
                 prev.innerHTML = '←';
                 prev.className = currentPage === 1 ? btnClass + ' text-gray-300 cursor-not-allowed' : normalClass;
                 prev.disabled = currentPage === 1;
-                prev.onclick = (e) => { e.preventDefault(); if (currentPage > 1) { currentPage--; renderPagination(); } };
+                prev.onclick = function(e) { e.preventDefault(); if (currentPage > 1) { currentPage--; renderPagination(); } };
                 btnContainer.appendChild(prev);
 
                 // Page numbers
-                for (let i = 1; i <= totalPages; i++) {
+                for (var i = 1; i <= totalPages; i++) {
                     if (totalPages > 7 && i > 3 && i < totalPages - 1 && Math.abs(i - currentPage) > 1) {
                         if (i === 4 || i === totalPages - 2) {
-                            const dots = document.createElement('span');
+                            var dots = document.createElement('span');
                             dots.textContent = '...';
                             dots.className = 'px-2 text-gray-400 text-sm';
                             btnContainer.appendChild(dots);
                         }
                         continue;
                     }
-                    const btn = document.createElement('button');
+                    var btn = document.createElement('button');
                     btn.type = 'button';
                     btn.textContent = i;
                     btn.className = i === currentPage ? activeClass : normalClass;
-                    btn.onclick = ((p) => (e) => { e.preventDefault(); currentPage = p; renderPagination(); })(i);
+                    (function(p) {
+                        btn.onclick = function(e) { e.preventDefault(); currentPage = p; renderPagination(); };
+                    })(i);
                     btnContainer.appendChild(btn);
                 }
 
@@ -1574,21 +1566,19 @@
                 next.innerHTML = '→';
                 next.className = currentPage === totalPages ? btnClass + ' text-gray-300 cursor-not-allowed' : normalClass;
                 next.disabled = currentPage === totalPages;
-                next.onclick = (e) => { e.preventDefault(); if (currentPage < totalPages) { currentPage++; renderPagination(); } };
-                btnContainer.a ppendChild(next);
-
-                setTimeout(() => { isPaginating = false; }, 100);
+                next.onclick = function(e) { e.preventDefault(); if (currentPage < totalPages) { currentPage++; renderPagination(); } };
+                btnContainer.appendChild(next);
             }
 
-            // Expose globally for filter/search integration
+            // Expose globally so filter buttons can call it
             window.carPaginationRender = function() {
                 currentPage = 1;
                 renderPagination();
             };
 
-            // Initial render
-            document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(renderPagination, 200);
+            // Initial render after DOM ready
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(renderPagination, 300);
             });
         })();
         </script>
@@ -4283,6 +4273,11 @@
                         row.classList.add('hidden');
                     }
                 });
+
+                // Re-render pagination after filter change
+                if (typeof window.carPaginationRender === 'function') {
+                    window.carPaginationRender();
+                }
             }
         }
 

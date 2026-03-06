@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             font-family: 'Sarabun', sans-serif;
@@ -21,9 +21,11 @@
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .input-dark {
@@ -41,18 +43,19 @@
         }
 
         .input-dark::placeholder {
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.35);
         }
 
         .btn-login {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
         .btn-login:hover {
             background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 10px 30px -5px rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
         }
 
         .car-icon {
@@ -96,6 +99,11 @@
             animation: fadeInUp 0.6s ease-out 0.3s forwards;
             opacity: 0;
         }
+
+        .error-box {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
     </style>
 </head>
 
@@ -117,7 +125,7 @@
         {{-- Login Card --}}
         <div class="glass-card rounded-2xl p-6 animate-fade-in-delay">
             @if ($errors->any())
-                <div class="mb-4 bg-red-500/15 border border-red-500/30 text-red-300 px-4 py-3 rounded-xl text-sm">
+                <div class="error-box mb-4 px-4 py-3 rounded-xl text-sm text-red-300">
                     @foreach ($errors->all() as $error)
                         <p>{{ $error }}</p>
                     @endforeach
@@ -147,7 +155,7 @@
                     </label>
                 </div>
 
-                <button type="submit" class="btn-login w-full py-3 rounded-xl text-white font-semibold text-sm">
+                <button type="submit" class="btn-login w-full py-3.5 rounded-xl text-white font-semibold text-sm">
                     <span class="flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"

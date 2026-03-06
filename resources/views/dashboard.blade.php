@@ -1328,9 +1328,11 @@
                                 </td>
 
                                 <!-- 3. Details -->
-                                <td class="px-4 py-3 cursor-pointer" onclick="openEditModal({{ $car->id }})">
+                                <td class="px-4 py-3 cursor-pointer"
+                                    onclick="window.location='{{ route('cars.show', $car) }}'">
                                     <div class="flex items-center gap-1">
-                                        <div class="text-sm font-bold text-slate-800">{{ $car->brand }} {{ $car->model }}
+                                        <div class="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
+                                            {{ $car->brand }} {{ $car->model }}
                                         </div>
                                         <button
                                             onclick="event.stopPropagation(); toggleRefurbForm({{ $car->id }}); openEditModal({{ $car->id }})"
@@ -1471,7 +1473,7 @@
         </div>
 
         <script>
-                                            (fun                          ction() {
+                                                 (f                                un                          ction() {
             const ITEMS_PER_PAGE = 10;
             let currentPage = 1;
             let isPaginating = false;
@@ -3763,7 +3765,7 @@
     <!-- Car Edit Modals (one for each car) -->
     @foreach($cars as $car)
         @php 
-                                                                                                    $totalCost = $car->total_cost;
+                                                                                                            $totalCost = $car->total_cost;
             $expectedProfit = $car->selling_price ? ($car->selling_price - $totalCost) : 0;
         @endphp
         <div id="editCarModal{{ $car->id }}"

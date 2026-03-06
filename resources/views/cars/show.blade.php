@@ -1,162 +1,263 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="th">
 
-@section('content')
-    <div class="max-w-3xl mx-auto">
-        <!-- Back Button -->
-        <a href="{{ route('dashboard') }}"
-            class="inline-flex items-center gap-1 text-gray-500 hover:text-blue-600 text-sm mb-4 transition">
-            ← กลับหน้าหลัก
-        </a>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สรุปต้นทุนรถ - {{ $car->brand }} {{ $car->model }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Sarabun', sans-serif;
+        }
 
-        @php
-            $refurbCost = $car->refurbishments->sum('amount');
-            $totalCost = $car->total_cost;
-            $isSold = $car->status == 'sold';
-            $displayPrice = $isSold ? $car->sold_price : $car->selling_price;
-            $profit = $displayPrice ? ($displayPrice - $totalCost) : 0;
-        @endphp
+        @media print {
+            .no-print {
+                display: none !important;
+            }
 
-        <!-- Car Header Card -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
-            <!-- Status Bar -->
-            <div
-                class="px-5 py-2 {{ $isSold ? 'bg-blue-50 border-b border-blue-100' : ($car->is_profit_stock ? 'bg-amber-50 border-b border-amber-100' : 'bg-emerald-50 border-b border-emerald-100') }}">
-                <div class="flex items-center justify-between">
-                    <span
-                        class="text-xs font-bold {{ $isSold ? 'text-blue-600' : ($car->is_profit_stock ? 'text-amber-600' : 'text-emerald-600') }}">
-                        {{ $isSold ? '🔵 ขายแล้ว' : ($car->is_profit_stock ? '🟡 ทุนอื่นๆ' : '🟢 อยู่ในสต็อก') }}
-                    </span>
-                    @if($isSold && $car->sold_date)
-                        <span class="text-xs text-gray-500">ขายวันที่ {{ $car->sold_date->format('d/m/Y') }}</span>
-                    @endif
-                </div>
-            </div>
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
 
-            <div class="p-5">
-                <!-- Car Images -->
+            .print-container {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                padding: 20px !important;
+            }
+
+            .section-card {
+                break-inside: avoid;
+                border: 1px solid #e5e7eb !important;
+            }
+
+            @page {
+                margin: 15mm;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Top Bar (no print) -->
+    <div class="no-print bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="{{ route('dashboard') }}"
+                class="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 text-sm font-medium transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                กลับหน้าหลัก
+            </a>
+            <button onclick="window.print()"
+                class="inline-flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                พิมพ์
+            </button>
+        </div>
+    </div>
+
+    @php
+        $refurbCost = $car->refurbishments->sum('amount');
+        $totalCost = $car->total_cost;
+        $isSold = $car->status == 'sold';
+        $soldPrice = $isSold ? $car->sold_price : null;
+        $sellingPrice = $car->selling_price;
+        $displayPrice = $isSold ? $soldPrice : $sellingPrice;
+        $profit = $displayPrice ? ($displayPrice - $totalCost) : 0;
+    @endphp
+
+    <div class="max-w-3xl mx-auto px-4 py-6 print-container">
+
+        <!-- Document Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">สรุปต้นทุนรถมือสอง 1 คัน</h1>
+            <div class="w-16 h-1 bg-indigo-500 mx-auto mt-2 rounded-full"></div>
+        </div>
+
+        <!-- Car Info -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5 section-card">
+            <div class="flex items-start gap-4">
                 @if($car->images->count() > 0)
-                    <div class="flex gap-2 overflow-x-auto pb-3 mb-4 -mx-1 px-1">
-                        @foreach($car->images as $image)
-                            <img src="{{ asset('img/' . $image->path) }}" alt="Car"
-                                class="w-24 h-20 object-cover rounded-xl shadow-sm flex-shrink-0">
-                        @endforeach
-                    </div>
+                    <img src="{{ asset('img/' . $car->images->first()->path) }}" alt="Car"
+                        class="w-20 h-16 object-cover rounded-lg flex-shrink-0">
                 @endif
-
-                <!-- Car Title -->
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h1 class="text-xl font-bold text-gray-800">{{ $car->brand }} {{ $car->model }}</h1>
-                        <div class="flex flex-wrap items-center gap-2 mt-1 text-sm text-gray-500">
-                            <span>ปี {{ $car->year }}</span>
-                            <span>·</span>
-                            <span class="inline-flex items-center gap-1">
-                                <span class="w-2.5 h-2.5 rounded-full inline-block border border-gray-200"
-                                    style="background: {{ $car->color == 'ขาว' ? '#e5e7eb' : ($car->color == 'ดำ' ? '#374151' : ($car->color == 'เทา' ? '#9ca3af' : ($car->color == 'เงิน' ? '#d1d5db' : ($car->color == 'น้ำเงิน' ? '#3b82f6' : ($car->color == 'แดง' ? '#ef4444' : '#f59e0b'))))) }};"></span>
-                                {{ $car->color }}
-                            </span>
-                            <span>·</span>
-                            <span>{{ $car->transmission == 'A' || $car->transmission == 'Auto' ? 'ออโต้' : 'เกียร์ธรรมดา' }}</span>
+                <div class="flex-1">
+                    <div class="text-lg font-bold text-gray-800">{{ $car->brand }} {{ $car->model }}</div>
+                    <div class="text-sm text-gray-600 mt-1 space-y-0.5">
+                        <div><strong>ปี:</strong> {{ $car->year }}</div>
+                        <div><strong>สี:</strong> {{ $car->color }} · <strong>เกียร์:</strong>
+                            {{ $car->transmission == 'A' || $car->transmission == 'Auto' ? 'ออโต้ (AT)' : 'ธรรมดา (MT)' }}
                         </div>
                         @if($car->license_plate)
-                            <div class="text-sm text-blue-500 font-medium mt-1">🔖 {{ $car->license_plate }}</div>
+                            <div><strong>ทะเบียน:</strong> {{ $car->license_plate }}</div>
                         @endif
+                        <div><strong>วันที่ซื้อ:</strong>
+                            {{ $car->purchase_date ? $car->purchase_date->format('d/m/Y') : '-' }}</div>
                         @if($car->notes)
-                            <div class="text-sm text-amber-600 font-medium mt-1">📝 {{ $car->notes }}</div>
+                            <div><strong>หมายเหตุ:</strong> {{ $car->notes }}</div>
                         @endif
                     </div>
-                    @if($car->branch)
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold"
-                            style="background-color: {{ $car->branch->color }}20; color: {{ $car->branch->color }}">
-                            {{ $car->branch->name }}
-                        </span>
+                </div>
+                <div class="flex-shrink-0">
+                    @if($isSold)
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">ขายแล้ว</span>
+                    @else
+                        <span
+                            class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">อยู่ในสต็อก</span>
                     @endif
                 </div>
             </div>
         </div>
 
-        <!-- Financial Summary -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
-            <h2 class="text-sm font-bold text-gray-800 mb-3">💰 สรุปการเงิน</h2>
-
-            <div class="space-y-2">
-                <!-- Purchase -->
-                <div class="flex justify-between items-center py-2.5 border-b border-gray-50">
-                    <span class="text-sm text-gray-600">ราคาซื้อ</span>
-                    <span class="text-sm font-bold text-gray-800">฿{{ number_format($car->purchase_price, 0) }}</span>
+        <!-- Section 1: ราคาซื้อรถ -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5 section-card">
+            <h2 class="text-lg font-bold text-gray-800 mb-3">1. ราคาซื้อรถ</h2>
+            <div class="border-t border-gray-100 pt-3">
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-sm text-gray-600">• ราคารับซื้อรถจากเจ้าของเดิม</span>
+                    <span class="text-sm font-bold text-gray-800">{{ number_format($car->purchase_price, 0) }}
+                        บาท</span>
                 </div>
-
-                <!-- Refurb Total -->
-                <div class="flex justify-between items-center py-2.5 border-b border-gray-50">
-                    <span class="text-sm text-gray-600">ค่าปรับสภาพรวม</span>
-                    <span class="text-sm font-bold text-orange-600">฿{{ number_format($refurbCost, 0) }}</span>
-                </div>
-
-                <!-- Total Cost (highlighted) -->
-                <div class="flex justify-between items-center py-3 bg-slate-50 rounded-xl px-3 -mx-1">
-                    <span class="text-sm font-bold text-slate-700">ต้นทุนรวม</span>
-                    <span class="text-base font-bold text-slate-800">฿{{ number_format($totalCost, 0) }}</span>
-                </div>
-
-                <!-- Selling/Sold Price -->
-                <div class="flex justify-between items-center py-2.5 border-b border-gray-50">
-                    <span class="text-sm text-gray-600">{{ $isSold ? 'ราคาขายจริง' : 'ราคาตั้งขาย' }}</span>
-                    <span
-                        class="text-sm font-bold text-blue-600">{{ $displayPrice ? '฿' . number_format($displayPrice, 0) : '-' }}</span>
-                </div>
-
-                <!-- Profit (highlighted) -->
-                @if($displayPrice)
-                    <div
-                        class="flex justify-between items-center py-3 {{ $profit >= 0 ? 'bg-emerald-50' : 'bg-red-50' }} rounded-xl px-3 -mx-1">
-                        <span class="text-sm font-bold {{ $profit >= 0 ? 'text-emerald-700' : 'text-red-700' }}">
-                            {{ $isSold ? 'กำไรจริง' : 'กำไรคาดการณ์' }}
-                        </span>
-                        <span class="text-base font-bold {{ $profit >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
-                            {{ $profit >= 0 ? '+' : '' }}฿{{ number_format($profit, 0) }}
-                        </span>
-                    </div>
-                @endif
             </div>
         </div>
 
-        <!-- Refurbishment Details -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="text-sm font-bold text-gray-800">🔧 รายการปรับสภาพ</h2>
-                <span class="text-xs text-gray-400">{{ $car->refurbishments->count() }} รายการ</span>
-            </div>
+        <!-- Section 2: ค่าปรับสภาพรถ -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5 section-card">
+            <h2 class="text-lg font-bold text-gray-800 mb-3">2. ค่าปรับสภาพรถ</h2>
 
             @if($car->refurbishments->count() > 0)
-                <div class="space-y-1">
-                    @foreach($car->refurbishments as $index => $item)
-                        <div class="flex justify-between items-center py-2.5 {{ !$loop->last ? 'border-b border-gray-50' : '' }}">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{{ $index + 1 }}</span>
-                                <span class="text-sm text-gray-700">{{ $item->name }}</span>
-                            </div>
-                            <span class="text-sm font-medium text-orange-600">฿{{ number_format($item->amount, 0) }}</span>
-                        </div>
-                    @endforeach
-                </div>
-                <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                    <span class="text-sm font-bold text-gray-600">รวมค่าปรับสภาพ</span>
-                    <span class="text-sm font-bold text-orange-600">฿{{ number_format($refurbCost, 0) }}</span>
-                </div>
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="text-left text-sm font-semibold text-gray-600 py-2">รายการ</th>
+                            <th class="text-right text-sm font-semibold text-gray-600 py-2">ค่าใช้จ่าย</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($car->refurbishments as $item)
+                            <tr class="border-b border-gray-50">
+                                <td class="text-sm text-gray-700 py-2.5">{{ $item->name }}</td>
+                                <td class="text-sm text-gray-800 py-2.5 text-right">{{ number_format($item->amount, 0) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-t-2 border-gray-200">
+                            <td class="text-sm font-bold text-gray-800 py-3">รวมค่าปรับสภาพ</td>
+                            <td class="text-sm font-bold text-orange-600 py-3 text-right">
+                                {{ number_format($refurbCost, 0) }} บาท</td>
+                        </tr>
+                    </tfoot>
+                </table>
             @else
-                <div class="text-center py-6 text-gray-400 text-sm">
-                    ยังไม่มีรายการปรับสภาพ
-                </div>
+                <p class="text-sm text-gray-400 py-3">— ไม่มีรายการปรับสภาพ —</p>
             @endif
         </div>
 
-        <!-- Timeline / Key Dates -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
-            <h2 class="text-sm font-bold text-gray-800 mb-3">📅 ไทม์ไลน์</h2>
-            <div class="space-y-3">
+        <!-- Section 3: ต้นทุนรวม -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5 section-card">
+            <h2 class="text-lg font-bold text-gray-800 mb-3">3. ต้นทุนรวม</h2>
+            <div class="space-y-2 border-t border-gray-100 pt-3">
+                <div class="flex justify-between items-center py-1.5">
+                    <span class="text-sm text-gray-600">• ราคาซื้อรถ</span>
+                    <span class="text-sm text-gray-800">= {{ number_format($car->purchase_price, 0) }}</span>
+                </div>
+                <div class="flex justify-between items-center py-1.5">
+                    <span class="text-sm text-gray-600">• ค่าปรับสภาพ</span>
+                    <span class="text-sm text-gray-800">= {{ number_format($refurbCost, 0) }}</span>
+                </div>
+                <div class="flex justify-between items-center py-3 bg-slate-50 rounded-lg px-3 -mx-1 mt-2">
+                    <span class="text-base font-bold text-gray-800">ต้นทุนรวม</span>
+                    <span class="text-base font-bold text-gray-800">= {{ number_format($totalCost, 0) }} บาท</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: ราคาขาย -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5 section-card">
+            <h2 class="text-lg font-bold text-gray-800 mb-3">4. ราคาขาย</h2>
+            <div class="border-t border-gray-100 pt-3 space-y-2">
+                @if($sellingPrice)
+                    <div class="flex justify-between items-center py-1.5">
+                        <span class="text-sm text-gray-600">• ราคาตั้งขาย</span>
+                        <span class="text-sm text-gray-800">= {{ number_format($sellingPrice, 0) }} บาท</span>
+                    </div>
+                @endif
+                @if($isSold && $soldPrice)
+                    <div class="flex justify-between items-center py-1.5">
+                        <span class="text-sm text-gray-600">• ราคาขายจริง</span>
+                        <span class="text-sm font-bold text-blue-600">= {{ number_format($soldPrice, 0) }} บาท</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">ขายวันที่
+                        {{ $car->sold_date ? $car->sold_date->format('d/m/Y') : '-' }}</div>
+                @elseif(!$sellingPrice)
+                    <p class="text-sm text-gray-400 py-1.5">— ยังไม่ได้ตั้งราคาขาย —</p>
+                @endif
+            </div>
+        </div>
+
+        <!-- Section 5: สรุปกำไร -->
+        <div
+            class="bg-white rounded-xl border-2 {{ $profit >= 0 ? 'border-green-200' : 'border-red-200' }} p-5 mb-5 section-card">
+            <h2 class="text-lg font-bold text-gray-800 mb-3">5. สรุปกำไร</h2>
+            <div class="border-t border-gray-100 pt-3 space-y-2">
+                @if($displayPrice)
+                    <div class="flex justify-between items-center py-1.5">
+                        <span class="text-sm text-gray-600">• {{ $isSold ? 'ราคาขาย' : 'ราคาตั้งขาย' }}</span>
+                        <span class="text-sm text-gray-800">{{ number_format($displayPrice, 0) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-1.5">
+                        <span class="text-sm text-gray-600">• ต้นทุนรวม</span>
+                        <span class="text-sm text-gray-800">{{ number_format($totalCost, 0) }}</span>
+                    </div>
+                    <div
+                        class="flex justify-between items-center py-4 {{ $profit >= 0 ? 'bg-green-50' : 'bg-red-50' }} rounded-lg px-4 -mx-1 mt-3">
+                        <span class="text-lg font-bold {{ $profit >= 0 ? 'text-green-700' : 'text-red-700' }}">
+                            {{ $isSold ? 'กำไร' : 'กำไรคาดการณ์' }}
+                        </span>
+                        <span class="text-xl font-bold {{ $profit >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                            = {{ $profit >= 0 ? '+' : '' }}{{ number_format($profit, 0) }} บาท
+                        </span>
+                    </div>
+                @else
+                    <p class="text-sm text-gray-400 py-3">— ยังไม่สามารถคำนวณได้ (ยังไม่ตั้งราคาขาย) —</p>
+                @endif
+            </div>
+        </div>
+
+        <!-- Section 6: สรุป -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5 section-card">
+            <h2 class="text-lg font-bold text-gray-800 mb-3">✅ สรุป:</h2>
+            <div class="space-y-2 text-sm text-gray-700">
+                <div>• ต้นทุนรวม = <strong>{{ number_format($totalCost, 0) }}</strong> บาท</div>
+                @if($displayPrice)
+                    <div>• {{ $isSold ? 'ขาย' : 'ตั้งขาย' }} = <strong>{{ number_format($displayPrice, 0) }}</strong> บาท
+                    </div>
+                    <div>• {{ $isSold ? 'กำไร' : 'กำไรคาดการณ์' }} = <strong
+                            class="{{ $profit >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $profit >= 0 ? '+' : '' }}{{ number_format($profit, 0) }}</strong>
+                        บาท / คัน</div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5 section-card">
+            <h2 class="text-lg font-bold text-gray-800 mb-3">📅 ไทม์ไลน์</h2>
+            <div class="space-y-3 border-t border-gray-100 pt-3">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm">🛒</div>
+                    <div
+                        class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm flex-shrink-0">
+                        🛒</div>
                     <div>
                         <div class="text-sm font-medium text-gray-700">ซื้อเข้ามา</div>
                         <div class="text-xs text-gray-400">
@@ -165,37 +266,49 @@
                 </div>
                 @if($isSold && $car->sold_date)
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-sm">🤝</div>
+                        <div
+                            class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-sm flex-shrink-0">
+                            🤝</div>
                         <div>
                             <div class="text-sm font-medium text-gray-700">ขายออก</div>
                             <div class="text-xs text-gray-400">{{ $car->sold_date->format('d/m/Y') }}</div>
                         </div>
                     </div>
-                    @php
-                        $daysInStock = $car->purchase_date->diffInDays($car->sold_date);
-                    @endphp
-                    <div class="text-xs text-gray-400 ml-11">อยู่ในสต็อก {{ $daysInStock }} วัน</div>
+                    <div class="text-xs text-gray-400 ml-11">อยู่ในสต็อก
+                        {{ $car->purchase_date->diffInDays($car->sold_date) }} วัน</div>
                 @else
-                    @php
-                        $daysInStock = $car->purchase_date ? $car->purchase_date->diffInDays(now()) : 0;
-                    @endphp
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-sm">⏳</div>
+                        <div
+                            class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center text-sm flex-shrink-0">
+                            ⏳</div>
                         <div>
                             <div class="text-sm font-medium text-gray-700">อยู่ในสต็อก</div>
-                            <div class="text-xs text-gray-400">{{ $daysInStock }} วันแล้ว</div>
+                            <div class="text-xs text-gray-400">
+                                {{ $car->purchase_date ? $car->purchase_date->diffInDays(now()) : 0 }} วันแล้ว</div>
                         </div>
                     </div>
                 @endif
             </div>
         </div>
 
-        <!-- Action Button -->
-        <div class="flex gap-3 mb-6">
+        <!-- Footer -->
+        <div class="text-center text-xs text-gray-400 py-4">
+            พิมพ์จากระบบ CarStock Master — {{ now()->format('d/m/Y H:i') }}
+        </div>
+
+        <!-- Back Button (no print) -->
+        <div class="no-print flex gap-3 mb-6">
             <a href="{{ route('dashboard') }}"
-                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 rounded-xl text-center text-sm transition">
+                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 rounded-xl text-center text-sm transition">
                 ← กลับ Dashboard
             </a>
+            <button onclick="window.print()"
+                class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-3 rounded-xl text-center text-sm transition">
+                🖨️ พิมพ์
+            </button>
         </div>
     </div>
-@endsection
+
+</body>
+
+</html>

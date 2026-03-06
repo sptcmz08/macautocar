@@ -1275,6 +1275,9 @@
                                 class="px-4 py-4 text-center text-xs font-bold text-emerald-600 uppercase tracking-wider whitespace-nowrap">
                                 คาดการณ์กำไร</th>
                             <th
+                                class="px-2 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                สรุป</th>
+                            <th
                                 class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
                                 สาขา</th>
                             <th
@@ -1391,6 +1394,19 @@
                                 <!-- 8. Profit -->
                                 <td class="px-4 py-4 text-center text-sm font-bold text-green-600 whitespace-nowrap">
                                     {{ $expectedProfit != 0 ? '฿' . number_format($expectedProfit, 0) : '-' }}
+                                </td>
+
+                                <!-- 8.5 Summary Link -->
+                                <td class="px-2 py-4 text-center whitespace-nowrap">
+                                    <a href="{{ route('cars.show', $car) }}" onclick="event.stopPropagation()"
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-500 hover:text-indigo-700 transition-all"
+                                        title="สรุปรายการ">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-4.5 h-4.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                        </svg>
+                                    </a>
                                 </td>
 
                                 <!-- 9. Branch -->
@@ -1559,7 +1575,7 @@
                 next.className = currentPage === totalPages ? btnClass + ' text-gray-300 cursor-not-allowed' : normalClass;
                 next.disabled = currentPage === totalPages;
                 next.onclick = (e) => { e.preventDefault(); if (currentPage < totalPages) { currentPage++; renderPagination(); } };
-                btnContainer.appendChild(next);
+                btnContainer.a ppendChild(next);
 
                 setTimeout(() => { isPaginating = false; }, 100);
             }
@@ -1761,21 +1777,21 @@
                                         @endif
                                         <button
                                             onclick="editExpense({{ $expense->id }}, '{{ addslashes($expense->name) }}', '{{ $expense->date->format('Y-m-d') }}', {{ $expense->amount }}, '{{ addslashes(str_replace(["\r\n", "\r", "\n"], ' ', $expense->description ?? '')) }}', 'increase', '{{ $expense->image ?? '' }}')"
-                                                class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs font-medium">
-                                                แก้ไข
+                                            class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs font-medium">
+                                            แก้ไข
+                                        </button>
+                                        <form action="{{ route('capital-expenses.destroy', $expense->id) }}" method="POST"
+                                            class="inline-block" onsubmit="return confirm('ยืนยันลบรายการนี้?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-medium">
+                                                ลบ
                                             </button>
-                                            <form action="{{ route('capital-expenses.destroy', $expense->id) }}" method="POST"
-                                                class="inline-block" onsubmit="return confirm('ยืนยันลบรายการนี้?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-medium">
-                                                    ลบ
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
                         @empty
                             <tr>
                                 <td colspan="7" class="px-6 py-10 text-center text-gray-400">
@@ -3765,7 +3781,7 @@
     <!-- Car Edit Modals (one for each car) -->
     @foreach($cars as $car)
         @php 
-                                                                                                            $totalCost = $car->total_cost;
+                                                                                                                            $totalCost = $car->total_cost;
             $expectedProfit = $car->selling_price ? ($car->selling_price - $totalCost) : 0;
         @endphp
         <div id="editCarModal{{ $car->id }}"

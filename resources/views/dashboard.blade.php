@@ -1445,9 +1445,126 @@
                     </tbody>
                 </table>
             </div>
+
+            {{-- Pagination Controls --}}
+            <div id="carPagination" class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-100 rounded-b-2xl">
+                <div class="text-sm text-gray-500">
+                    แสดง <span id="pagShowFrom">0</span>-<span id="pagShowTo">0</span> จาก <span id="pagTotal">0</span> รายการ
+                </div>
+                <div class="flex items-center gap-1" id="pagButtons"></div>
+            </div>
         </div>
 
-        <!-- Parts List Table (Hidden by default) -->
+        <script>
+        (function() {
+            const ITEMS_PER_PAGE = 10;
+            let currentPage = 1;
+
+            function getVisibleRows() {
+                const tbody = document.querySelector('#carTable tbody');
+                if (!tbody) return [];
+                return Array.from(tbody.querySelectorAll('tr[data-status]')).filter(row => row.style.display !== 'none' && !row.classList.contains('search-hidden'));
+            }
+
+            function getAllDataRows() {
+                const tbody = document.querySelector('#carTable tbody');
+                if (!tbody) return [];
+                return Array.from(tbody.querySelectorAll('tr[data-status]'));
+            }
+
+            function renderPagination() {
+                const allRows = getAllDataRows();
+                const visibleRows = allRows.filter(r => !r.classList.contains('search-hidden') && !r.classList.contains('filter-hidden'));
+                const totalVisible = visibleRows.length;
+                const totalPages = Math.ceil(totalVisible / ITEMS_PER_PAGE);
+                if (currentPage > totalPages) currentPage = totalPages || 1;
+
+                // Show/hide rows
+                let visibleIndex = 0;
+                allRows.forEach(row => {
+                    if (row.classList.contains('search-hidden') || row.classList.contains('filter-hidden')) {
+                        row.style.display = 'none';
+                        return;
+                    }
+                    visibleIndex++;
+                    const page = Math.ceil(visibleIndex / ITEMS_PER_PAGE);
+                    row.style.display = (page === currentPage) ? '' : 'none';
+                });
+
+                // Update info
+                const from = totalVisible > 0 ? ((currentPage - 1) * ITEMS_PER_PAGE) + 1 : 0;
+                const to = Math.min(currentPage * ITEMS_PER_PAGE, totalVisible);
+                document.getElementById('pagShowFrom').textContent = from;
+                document.getElementById('pagShowTo').textContent = to;
+                document.getElementById('pagTotal').textContent = totalVisible;
+
+                // Render buttons
+                const btnContainer = document.getElementById('pagButtons');
+                btnContainer.innerHTML = '';
+
+                if (totalPages <= 1) return;
+
+                const btnClass = 'px-3 py-1.5 text-sm rounded-lg transition-all duration-200 font-medium';
+                const activeClass = btnClass + ' bg-blue-500 text-white shadow-md';
+                const normalClass = btnClass + ' bg-gray-100 text-gray-600 hover:bg-gray-200';
+
+                // Prev
+                const prev = document.createElement('button');
+                prev.innerHTML = '←';
+                prev.className = currentPage === 1 ? btnClass + ' text-gray-300 cursor-not-allowed' : normalClass;
+                prev.disabled = currentPage === 1;
+                prev.onclick = () => { if (currentPage > 1) { currentPage--; renderPagination(); } };
+                btnContainer.appendChild(prev);
+
+                // Page numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    if (totalPages > 7 && i > 3 && i < totalPages - 1 && Math.abs(i - currentPage) > 1) {
+                        if (i === 4 || i === totalPages - 2) {
+                            const dots = document.createElement('span');
+                            dots.textContent = '...';
+                            dots.className = 'px-2 text-gray-400 text-sm';
+                            btnContainer.appendChild(dots);
+                        }
+                        continue;
+                    }
+                    const btn = document.createElement('button');
+                    btn.textContent = i;
+                    btn.className = i === currentPage ? activeClass : normalClass;
+                    btn.onclick = () => { currentPage = i; renderPagination(); };
+                    btnContainer.appendChild(btn);
+                }
+
+                // Next
+                const next = document.createElement('button');
+                next.innerHTML = '→';
+                next.className = currentPage === totalPages ? btnClass + ' text-gray-300 cursor-not-allowed' : normalClass;
+                next.disabled = currentPage === totalPages;
+                next.onclick = () => { if (currentPage < totalPages) { currentPage++; renderPagination(); } };
+                btnContainer.appendChild(next);
+            }
+
+            // Expose globally for filter/search integration
+            window.carPaginationRender = function() {
+                currentPage = 1;
+                renderPagination();
+            };
+
+            // Initial render
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(renderPagination, 100);
+            });
+
+            // Hook into existing search if present
+            const searchObs = new MutationObserver(() => {
+                currentPage = 1;
+                setTimeout(renderPagination, 50);
+            });
+            document.addEventListener('DOMContentLoaded', () => {
+                const tbody = document.querySelector('#carTable tbody');
+                if (tbody) searchObs.observe(tbody, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+            });
+        })();
+        </script>
         <div id="partSection" class="hidden">
             <div class="bg-white shadow rounded-lg overflow-x-auto table-responsive">
                 <table class="min-w-full divide-y divide-gray-200" id="partTable">

@@ -97,7 +97,7 @@ class CarController extends Controller
 
         $car->update([
             'status' => 'sold',
-            'sold_date' => now(),
+            'sold_date' => $request->sold_date ?? now(),
             'sold_price' => $soldPrice,
         ]);
 

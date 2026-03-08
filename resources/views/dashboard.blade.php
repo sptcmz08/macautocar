@@ -1480,7 +1480,7 @@
         </div>
 
         <script>
-        w                indow .carP                aginationRender = function() {};
+        w                indow.carP                aginationRender = function () { };
         </script>
         <div id="partSection" class="hidden">
             <div class="bg-white shadow rounded-lg overflow-x-auto table-responsive">
@@ -1906,6 +1906,8 @@
                     @csrf
                     <input type="hidden" name="sold_price" id="finalSoldPrice">
 
+                    <input type="hidden" name="sold_date" id="finalSoldDate">
+
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">ต้นทุนรวม (ซื้อ + ปรับสภาพ)</label>
                         <input type="text" id="displayTotalCost" readonly
@@ -1917,6 +1919,12 @@
                         <input type="number" id="inputSoldPrice"
                             class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
                             placeholder="ระบุราคาขาย">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">📅 วันที่ขาย</label>
+                        <input type="date" id="inputSoldDate"
+                            class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500">
                     </div>
 
                     <div class="mb-6">
@@ -3671,7 +3679,7 @@
     <!-- Car Edit Modals (one for each car) -->
     @foreach($cars as $car)
         @php 
-                                                                                                                                                    $totalCost = $car->total_cost;
+                                                                                                                                                                    $totalCost = $car->total_cost;
             $expectedProfit = $car->selling_price ? ($car->selling_price - $totalCost) : 0;
         @endphp
         <div id="editCarModal{{ $car->id }}"
@@ -4531,6 +4539,9 @@
             // Calc initial profit
             calculateProfit(initialPrice);
 
+            // Default sold date to today
+            document.getElementById('inputSoldDate').value = new Date().toISOString().split('T')[0];
+
             // Show Modal
             document.getElementById('sellCarModal').classList.remove('hidden');
             // Small delay to ensure modal is visible before focusing
@@ -4557,8 +4568,11 @@
 
         function submitSellForm() {
             const price = document.getElementById('inputSoldPrice').value;
+            const soldDate = document.getElementById('inputSoldDate').value;
             if(!price) { alert('กรุณาระบุราคาขาย'); return; }
+            if(!soldDate) { alert('กรุณาระบุวันที่ขาย'); return; }
             document.getElementById('finalSoldPrice').value = price;
+            document.getElementById('finalSoldDate').value = soldDate;
             document.getElementById('sellCarForm').submit();
         }
 

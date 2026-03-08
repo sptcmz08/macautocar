@@ -544,7 +544,7 @@
             }
 
             .table-responsive table {
-                min-width: 600px;
+                min-width: 1200px;
             }
 
             /* Stack action buttons on small screens */

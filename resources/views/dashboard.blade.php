@@ -1477,110 +1477,10 @@
                 </table>
             </div>
 
-            {{-- Pagination Controls --}}
-            <div id="carPagination"
-                class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-100 rounded-b-2xl">
-                <div class="text-sm text-gray-500">
-                    แสดง <span id="pagShowFrom">0</span>-<span id="pagShowTo">0</span> จาก <span id="pagTotal">0</span>
-                    รายการ
-                </div>
-                <div class="flex items-center gap-1" id="pagButtons"></div>
             </div>
-        </div>
 
         <script>
-        (function() {
-            const ITEMS_PER_PAGE = 10;
-            let currentPage = 1;
-
-            function getAllDataRows() {
-                const tbody = document.querySelector('#carTable tbody');
-                if (!tbody) return [];
-                return Array.from(tbody.querySelectorAll('tr[data-status]'));
-            }
-
-            function renderPagination() {
-                const allRows = getAllDataRows();
-                // Rows that are NOT hidden by filters (check for 'hidden' class used by filter buttons)
-                const filteredRows = allRows.filter(r => !r.classList.contains('hidden'));
-                const totalVisible = filteredRows.length;
-                const totalPages = Math.ceil(totalVisible / ITEMS_PER_PAGE);
-                if (currentPage > totalPages) currentPage = totalPages || 1;
-
-                // Paginate only filtered rows
-                filteredRows.forEach((row, idx) => {
-                    const page = Math.ceil((idx + 1) / ITEMS_PER_PAGE);
-                    row.style.display = (page === currentPage) ? '' : 'none';
-                });
-
-                // Update info text
-                const from = totalVisible > 0 ? ((currentPage - 1) * ITEMS_PER_PAGE) + 1 : 0;
-                const to = Math.min(currentPage * ITEMS_PER_PAGE, totalVisible);
-                document.getElementById('pagShowFrom').textContent = from;
-                document.getElementById('pagShowTo').textContent = to;
-                document.getElementById('pagTotal').textContent = totalVisible;
-
-                // Render buttons
-                const btnContainer = document.getElementById('pagButtons');
-                btnContainer.innerHTML = '';
-
-                if (totalPages <= 1) return;
-
-                const btnClass = 'px-3 py-1.5 text-sm rounded-lg transition-all duration-200 font-medium';
-                const activeClass = btnClass + ' bg-blue-500 text-white shadow-md';
-                const normalClass = btnClass + ' bg-gray-100 text-gray-600 hover:bg-gray-200';
-
-                // Prev
-                const prev = document.createElement('button');
-                prev.type = 'button';
-                prev.innerHTML = '←';
-                prev.className = currentPage === 1 ? btnClass + ' text-gray-300 cursor-not-allowed' : normalClass;
-                prev.disabled = currentPage === 1;
-                prev.onclick = function(e) { e.preventDefault(); if (currentPage > 1) { currentPage--; renderPagination(); } };
-                btnContainer.appendChild(prev);
-
-                // Page numbers
-                for (var i = 1; i <= totalPages; i++) {
-                    if (totalPages > 7 && i > 3 && i < totalPages - 1 && Math.abs(i - currentPage) > 1) {
-                        if (i === 4 || i === totalPages - 2) {
-                            var dots = document.createElement('span');
-                            dots.textContent = '...';
-                            dots.className = 'px-2 text-gray-400 text-sm';
-                            btnContainer.appendChild(dots);
-                        }
-                        continue;
-                    }
-                    var btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.textContent = i;
-                    btn.className = i === currentPage ? activeClass : normalClass;
-                    (function(p) {
-                        btn.onclick = function(e) { e.preventDefault(); currentPage = p; renderPagination(); };
-                    })(i);
-                    btnContainer.appendChild(btn);
-                }
-
-                // Next
-                const next = document.createElement('button');
-                next.type = 'button';
-                next.innerHTML = '→';
-                next.className = currentPage === totalPages ? btnClass + ' text-gray-300 cursor-not-allowed' : normalClass;
-                next.disabled = currentPage === totalPages;
-                next.onclick = function(e) { e.preventDefault(); if (currentPage < totalPages) { currentPage++; renderPagination(); } };
-                btnContainer.appendChild(next);
-            }
-
-            // Expose globally so filter buttons can call it
-            window.carPaginationRender = function() {
-                currentPage = 1;
-                renderPagination();
-            };
-
-            // Initial render after DOM ready
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(renderPagination, 300);
-            });
-        })();
+        window.carPaginationRender = function() {};
         </script>
         <div id="partSection" class="hidden">
             <div class="bg-white shadow rounded-lg overflow-x-auto table-responsive">
@@ -3771,7 +3671,7 @@
     <!-- Car Edit Modals (one for each car) -->
     @foreach($cars as $car)
         @php 
-                                                                                                                            $totalCost = $car->total_cost;
+                                                                                                                                    $totalCost = $car->total_cost;
             $expectedProfit = $car->selling_price ? ($car->selling_price - $totalCost) : 0;
         @endphp
         <div id="editCarModal{{ $car->id }}"
@@ -3836,13 +3736,13 @@
 
                     <div>
                         <label class="block text-xs font-medium text-blue-600 mb-1">ราคาที่ซื้อมา</label>
-                        <input type="number" name="purchase_price" value="{{ $car->purchase_price }}"
+                        <input type="number" step="1" name="purchase_price" value="{{ (int) $car->purchase_price }}"
                             class="w-full bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-lg text-blue-600 font-bold">
                     </div>
 
                     <div>
                         <label class="block text-xs font-medium text-blue-600 mb-1">ราคาตั้งขาย</label>
-                        <input type="number" name="selling_price" value="{{ $car->selling_price }}"
+                        <input type="number" step="1" name="selling_price" value="{{ (int) $car->selling_price }}"
                             class="w-full bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-lg text-blue-600 font-bold">
                     </div>
 

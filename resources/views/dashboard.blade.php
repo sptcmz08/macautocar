@@ -1243,244 +1243,274 @@
 
         <!-- Car List Table - Premium Design -->
         <div id="carSection">
+            <!-- Zoom Controls -->
+            <div class="flex items-center gap-2 mb-2 px-1">
+                <span class="text-xs text-gray-500">🔍 ขนาด:</span>
+                <button type="button" onclick="setTableZoom(0.25)"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">25%</button>
+                <button type="button" onclick="setTableZoom(0.50)"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">50%</button>
+                <button type="button" onclick="setTableZoom(0.75)"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">75%</button>
+                <button type="button" onclick="setTableZoom(1)"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-blue-500 text-white">100%</button>
+            </div>
             <div class="glass-card overflow-x-auto table-responsive">
-                <table class="min-w-full" id="carTable">
-                    <thead class="bg-gradient-to-r from-slate-100 to-gray-100">
-                        <tr>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap w-12">
-                                ลำดับ</th>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap w-16">
-                                รูป</th>
-                            <th
-                                class="px-4 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
-                                รายละเอียดรายการ</th>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
-                                ทะเบียน / ประเภท</th>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
-                                ทุนซื้อ/จ่าย</th>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
-                                ปรับสภาพ</th>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
-                                ยอดรวม</th>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
-                                ราคาตั้งขาย</th>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-emerald-600 uppercase tracking-wider whitespace-nowrap">
-                                คาดการณ์กำไร</th>
-                            <th
-                                class="px-2 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
-                                สรุป</th>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
-                                สาขา</th>
-                            <th
-                                class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
-                                จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-50">
-                        @forelse($cars as $index => $car)
-                            @php
-                                $refurbCost = $car->refurbishments->sum('amount');
-                                $totalCost = $car->total_cost;
-                                $expectedProfit = $car->status == 'sold'
-                                    ? ($car->sold_price - $totalCost)
-                                    : ($car->selling_price ? ($car->selling_price - $totalCost) : 0);
-                                $displayPrice = $car->status == 'sold' ? $car->sold_price : $car->selling_price;
-                                $firstImage = $car->images->first();
-                            @endphp
-                            <tr data-status="{{ $car->status }}"
-                                data-is-profit-stock="{{ $car->is_profit_stock ? '1' : '0' }}"
-                                class="table-row-premium hover:bg-blue-50/50 transition-all duration-200">
+                <div id="carTableWrapper" style="transform-origin: top left; transition: transform 0.3s ease;">
+                    <table class="min-w-full" id="carTable">
+                        <thead class="bg-gradient-to-r from-slate-100 to-gray-100">
+                            <tr>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap w-12">
+                                    ลำดับ</th>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap w-16">
+                                    รูป</th>
+                                <th
+                                    class="px-4 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                    รายละเอียดรายการ</th>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                    ทะเบียน / ประเภท</th>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                    ทุนซื้อ/จ่าย</th>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                    ปรับสภาพ</th>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                    ยอดรวม</th>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                    ราคาตั้งขาย</th>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-emerald-600 uppercase tracking-wider whitespace-nowrap">
+                                    คาดการณ์กำไร</th>
+                                <th
+                                    class="px-2 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                    สรุป</th>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                    สาขา</th>
+                                <th
+                                    class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                                    จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-50">
+                            @forelse($cars as $index => $car)
+                                @php
+                                    $refurbCost = $car->refurbishments->sum('amount');
+                                    $totalCost = $car->total_cost;
+                                    $expectedProfit = $car->status == 'sold'
+                                        ? ($car->sold_price - $totalCost)
+                                        : ($car->selling_price ? ($car->selling_price - $totalCost) : 0);
+                                    $displayPrice = $car->status == 'sold' ? $car->sold_price : $car->selling_price;
+                                    $firstImage = $car->images->first();
+                                @endphp
+                                <tr data-status="{{ $car->status }}"
+                                    data-is-profit-stock="{{ $car->is_profit_stock ? '1' : '0' }}"
+                                    class="table-row-premium hover:bg-blue-50/50 transition-all duration-200">
 
-                                <!-- 1. Order -->
-                                <td class="px-4 py-4 text-center text-slate-600 font-medium whitespace-nowrap"
-                                    onclick="openEditModal({{ $car->id }})">
-                                    {{ $index + 1 }}
-                                </td>
+                                    <!-- 1. Order -->
+                                    <td class="px-4 py-4 text-center text-slate-600 font-medium whitespace-nowrap"
+                                        onclick="openEditModal({{ $car->id }})">
+                                        {{ $index + 1 }}
+                                    </td>
 
-                                <!-- 2. Image -->
-                                <td class="px-2 py-3 text-center">
-                                    @if($car->images->count() > 0)
-                                        <div class="relative cursor-pointer"
-                                            onclick="event.stopPropagation(); openGallery({{ $car->images->pluck('path')->map(fn($p) => '/img/' . $p)->toJson() }})">
-                                            <img src="{{ '/img/' . $firstImage->path }}" alt="Car Image"
-                                                class="w-16 h-16 object-cover rounded-xl shadow-sm hover:scale-110 transition-transform">
-                                            @if($car->images->count() > 1)
-                                                <span
-                                                    class="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $car->images->count() }}</span>
+                                    <!-- 2. Image -->
+                                    <td class="px-2 py-3 text-center">
+                                        @if($car->images->count() > 0)
+                                            <div class="relative cursor-pointer"
+                                                onclick="event.stopPropagation(); openGallery({{ $car->images->pluck('path')->map(fn($p) => '/img/' . $p)->toJson() }})">
+                                                <img src="{{ '/img/' . $firstImage->path }}" alt="Car Image"
+                                                    class="w-16 h-16 object-cover rounded-xl shadow-sm hover:scale-110 transition-transform">
+                                                @if($car->images->count() > 1)
+                                                    <span
+                                                        class="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $car->images->count() }}</span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <div class="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 cursor-pointer"
+                                                onclick="event.stopPropagation(); openEditModal({{ $car->id }})">
+                                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                                    </path>
+                                                </svg>
+                                            </div>
+                                        @endif
+                                    </td>
+
+                                    <!-- 3. Details -->
+                                    <td class="px-4 py-3 cursor-pointer"
+                                        onclick="window.location='{{ route('cars.show', $car) }}'">
+                                        <div class="flex items-center gap-1">
+                                            <div
+                                                class="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
+                                                {{ $car->brand }} {{ $car->model }}
+                                            </div>
+                                            <button
+                                                onclick="event.stopPropagation(); toggleRefurbForm({{ $car->id }}); openEditModal({{ $car->id }})"
+                                                class="text-blue-500 hover:text-blue-700" title="เพิ่มค่าใช้จ่าย">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                                    fill="currentColor" class="w-4 h-4">
+                                                    <path
+                                                        d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1 leading-relaxed">
+                                            <span class="inline-flex items-center gap-1">
+                                                <span class="w-2 h-2 rounded-full inline-block"
+                                                    style="background: {{ $car->color == 'ขาว' ? '#e5e7eb' : ($car->color == 'ดำ' ? '#374151' : ($car->color == 'เทา' ? '#9ca3af' : ($car->color == 'เงิน' ? '#d1d5db' : ($car->color == 'น้ำเงิน' ? '#3b82f6' : ($car->color == 'แดง' ? '#ef4444' : '#f59e0b'))))) }}; border: 1px solid #d1d5db;"></span>
+                                                {{ $car->color }}
+                                            </span>
+                                            @if($car->transmission)
+                                                · {{ $car->transmission == 'A' ? 'ออโต้' : 'เกียร์ธรรมดา' }}
                                             @endif
                                         </div>
-                                    @else
-                                        <div class="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 cursor-pointer"
-                                            onclick="event.stopPropagation(); openEditModal({{ $car->id }})">
-                                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                                </path>
-                                            </svg>
-                                        </div>
-                                    @endif
-                                </td>
-
-                                <!-- 3. Details -->
-                                <td class="px-4 py-3 cursor-pointer"
-                                    onclick="window.location='{{ route('cars.show', $car) }}'">
-                                    <div class="flex items-center gap-1">
-                                        <div class="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
-                                            {{ $car->brand }} {{ $car->model }}
-                                        </div>
-                                        <button
-                                            onclick="event.stopPropagation(); toggleRefurbForm({{ $car->id }}); openEditModal({{ $car->id }})"
-                                            class="text-blue-500 hover:text-blue-700" title="เพิ่มค่าใช้จ่าย">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                                class="w-4 h-4">
-                                                <path
-                                                    d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="text-xs text-gray-500 mt-1 leading-relaxed">
-                                        <span class="inline-flex items-center gap-1">
-                                            <span class="w-2 h-2 rounded-full inline-block"
-                                                style="background: {{ $car->color == 'ขาว' ? '#e5e7eb' : ($car->color == 'ดำ' ? '#374151' : ($car->color == 'เทา' ? '#9ca3af' : ($car->color == 'เงิน' ? '#d1d5db' : ($car->color == 'น้ำเงิน' ? '#3b82f6' : ($car->color == 'แดง' ? '#ef4444' : '#f59e0b'))))) }}; border: 1px solid #d1d5db;"></span>
-                                            {{ $car->color }}
-                                        </span>
-                                        @if($car->transmission)
-                                            · {{ $car->transmission == 'A' ? 'ออโต้' : 'เกียร์ธรรมดา' }}
+                                        @if($car->license_plate)
+                                            <div class="text-xs text-blue-500 font-medium mt-0.5">🔖 {{ $car->license_plate }}
+                                            </div>
                                         @endif
-                                    </div>
-                                    @if($car->license_plate)
-                                        <div class="text-xs text-blue-500 font-medium mt-0.5">🔖 {{ $car->license_plate }}</div>
-                                    @endif
-                                    @if($car->notes)
-                                        <div class="text-xs text-amber-600 font-medium mt-0.5">📝 {{ $car->notes }}</div>
-                                    @endif
-                                </td>
+                                        @if($car->notes)
+                                            <div class="text-xs text-amber-600 font-medium mt-0.5">📝 {{ $car->notes }}</div>
+                                        @endif
+                                    </td>
 
-                                <!-- 3. License -->
-                                <td class="px-4 py-4 text-center text-sm text-slate-600 cursor-pointer whitespace-nowrap"
-                                    onclick="openEditModal({{ $car->id }})">
-                                    {{ $car->license_plate ?: '-' }}
-                                </td>
+                                    <!-- 3. License -->
+                                    <td class="px-4 py-4 text-center text-sm text-slate-600 cursor-pointer whitespace-nowrap"
+                                        onclick="openEditModal({{ $car->id }})">
+                                        {{ $car->license_plate ?: '-' }}
+                                    </td>
 
-                                <!-- 4. Purchase Price -->
-                                <td class="px-4 py-4 text-center text-sm font-medium text-slate-700 whitespace-nowrap">
-                                    ฿{{ number_format($car->purchase_price, 0) }}
-                                </td>
+                                    <!-- 4. Purchase Price -->
+                                    <td class="px-4 py-4 text-center text-sm font-medium text-slate-700 whitespace-nowrap">
+                                        ฿{{ number_format($car->purchase_price, 0) }}
+                                    </td>
 
-                                <!-- 5. Refurb Cost -->
-                                <td class="px-4 py-4 text-center text-sm font-medium text-slate-700 whitespace-nowrap">
-                                    ฿{{ number_format($refurbCost, 0) }}
-                                </td>
+                                    <!-- 5. Refurb Cost -->
+                                    <td class="px-4 py-4 text-center text-sm font-medium text-slate-700 whitespace-nowrap">
+                                        ฿{{ number_format($refurbCost, 0) }}
+                                    </td>
 
-                                <!-- 6. Total Cost -->
-                                <td class="px-4 py-4 text-center text-sm font-bold text-slate-800 whitespace-nowrap">
-                                    ฿{{ number_format($totalCost, 0) }}
-                                </td>
+                                    <!-- 6. Total Cost -->
+                                    <td class="px-4 py-4 text-center text-sm font-bold text-slate-800 whitespace-nowrap">
+                                        ฿{{ number_format($totalCost, 0) }}
+                                    </td>
 
-                                <!-- 7. Selling Price -->
-                                <td class="px-4 py-4 text-center text-sm font-bold text-blue-600 whitespace-nowrap">
-                                    {{ $displayPrice ? '฿' . number_format($displayPrice, 0) : '-' }}
-                                </td>
+                                    <!-- 7. Selling Price -->
+                                    <td class="px-4 py-4 text-center text-sm font-bold text-blue-600 whitespace-nowrap">
+                                        {{ $displayPrice ? '฿' . number_format($displayPrice, 0) : '-' }}
+                                    </td>
 
-                                <!-- 8. Profit -->
-                                <td class="px-4 py-4 text-center text-sm font-bold text-green-600 whitespace-nowrap">
-                                    {{ $expectedProfit != 0 ? '฿' . number_format($expectedProfit, 0) : '-' }}
-                                </td>
+                                    <!-- 8. Profit -->
+                                    <td class="px-4 py-4 text-center text-sm font-bold text-green-600 whitespace-nowrap">
+                                        {{ $expectedProfit != 0 ? '฿' . number_format($expectedProfit, 0) : '-' }}
+                                    </td>
 
-                                <!-- 8.5 Summary Link -->
-                                <td class="px-2 py-4 text-center whitespace-nowrap">
-                                    <a href="{{ route('cars.show', $car) }}" onclick="event.stopPropagation()"
-                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-500 hover:text-indigo-700 transition-all"
-                                        title="สรุปรายการ">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="w-4.5 h-4.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                        </svg>
-                                    </a>
-                                </td>
+                                    <!-- 8.5 Summary Link -->
+                                    <td class="px-2 py-4 text-center whitespace-nowrap">
+                                        <a href="{{ route('cars.show', $car) }}" onclick="event.stopPropagation()"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-500 hover:text-indigo-700 transition-all"
+                                            title="สรุปรายการ">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-4.5 h-4.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                            </svg>
+                                        </a>
+                                    </td>
 
-                                <!-- 9. Branch -->
-                                <td class="px-2 py-4 text-center whitespace-nowrap cursor-pointer"
-                                    onclick="openEditModal({{ $car->id }})">
-                                    <div class="flex items-center justify-center gap-1 px-2 py-1 rounded-full text-xs font-medium hover:bg-gray-100 transition inline-flex"
-                                        style="{{ $car->branch ? 'background-color: ' . $car->branch->color . '20; color: ' . $car->branch->color : '' }}">
-                                        @if($car->branch)
-                                            <span class="w-2 h-2 rounded-full"
-                                                style="background-color: {{ $car->branch->color }}"></span>
-                                            <span>{{ $car->branch->name }}</span>
+                                    <!-- 9. Branch -->
+                                    <td class="px-2 py-4 text-center whitespace-nowrap cursor-pointer"
+                                        onclick="openEditModal({{ $car->id }})">
+                                        <div class="flex items-center justify-center gap-1 px-2 py-1 rounded-full text-xs font-medium hover:bg-gray-100 transition inline-flex"
+                                            style="{{ $car->branch ? 'background-color: ' . $car->branch->color . '20; color: ' . $car->branch->color : '' }}">
+                                            @if($car->branch)
+                                                <span class="w-2 h-2 rounded-full"
+                                                    style="background-color: {{ $car->branch->color }}"></span>
+                                                <span>{{ $car->branch->name }}</span>
+                                            @else
+                                                <span class="text-gray-400">+ สาขา</span>
+                                            @endif
+                                        </div>
+                                    </td>
+
+                                    <!-- 10. Management -->
+                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                        @if($car->status == 'stock')
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button type="button"
+                                                    onclick="openSellModal({{ $car->id }}, {{ $car->total_cost }}, {{ $car->selling_price ?? 'null' }})"
+                                                    class="text-sm font-medium text-blue-500 hover:text-blue-700 hover:underline">
+                                                    ปิดขาย
+                                                </button>
+                                                <form action="{{ route('cars.destroy', $car) }}" method="POST"
+                                                    onclick="event.stopPropagation()"
+                                                    onsubmit="return confirm('ยืนยันการลบรถคันนี้? ข้อมูลจะถูกย้ายไปถังขยะ');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-gray-400 hover:text-red-500 p-1"
+                                                        title="ลบ">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                            stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         @else
-                                            <span class="text-gray-400">+ สาขา</span>
+                                            <div class="flex items-center justify-center gap-2">
+                                                <span class="text-sm font-medium text-blue-400">ขายแล้ว</span>
+                                                <form action="{{ route('cars.destroy', $car) }}" method="POST"
+                                                    onclick="event.stopPropagation()"
+                                                    onsubmit="return confirm('ยืนยันการลบรถคันนี้?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-gray-400 hover:text-red-500 p-1"
+                                                        title="ลบ">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                            stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         @endif
-                                    </div>
-                                </td>
-
-                                <!-- 10. Management -->
-                                <td class="px-4 py-4 text-center whitespace-nowrap">
-                                    @if($car->status == 'stock')
-                                        <div class="flex items-center justify-center gap-2">
-                                            <button type="button"
-                                                onclick="openSellModal({{ $car->id }}, {{ $car->total_cost }}, {{ $car->selling_price ?? 'null' }})"
-                                                class="text-sm font-medium text-blue-500 hover:text-blue-700 hover:underline">
-                                                ปิดขาย
-                                            </button>
-                                            <form action="{{ route('cars.destroy', $car) }}" method="POST"
-                                                onclick="event.stopPropagation()"
-                                                onsubmit="return confirm('ยืนยันการลบรถคันนี้? ข้อมูลจะถูกย้ายไปถังขยะ');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-gray-400 hover:text-red-500 p-1" title="ลบ">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @else
-                                        <div class="flex items-center justify-center gap-2">
-                                            <span class="text-sm font-medium text-blue-400">ขายแล้ว</span>
-                                            <form action="{{ route('cars.destroy', $car) }}" method="POST"
-                                                onclick="event.stopPropagation()"
-                                                onsubmit="return confirm('ยืนยันการลบรถคันนี้?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-gray-400 hover:text-red-500 p-1" title="ลบ">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="10" class="px-4 py-8 text-center text-gray-400">ยังไม่มีข้อมูลรถ กด "+
-                                    รับรถเข้า" เพื่อเพิ่ม</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="10" class="px-4 py-8 text-center text-gray-400">ยังไม่มีข้อมูลรถ กด "+
+                                        รับรถเข้า" เพื่อเพิ่ม</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
 
         <script>
-        w                indow.carP                aginationRender = function () { };
+        window.carPaginationRender = function() {};
+        function setTableZoom(scale) {
+            var wrapper = document.getElementById('carTableWrapper');
+            wrapper.style.transform = 'scale(' + scale + ')';
+            wrapper.style.width = (100 / scale) + '%';
+            // Update button styles
+            document.querySelectorAll('.zoom-btn').forEach(function(btn) {
+                btn.classList.remove('bg-blue-500', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-600');
+            });
+            event.target.classList.remove('bg-gray-100', 'text-gray-600');
+            event.target.classList.add('bg-blue-500', 'text-white');
+        }
         </script>
         <div id="partSection" class="hidden">
             <div class="bg-white shadow rounded-lg overflow-x-auto table-responsive">
@@ -3679,7 +3709,7 @@
     <!-- Car Edit Modals (one for each car) -->
     @foreach($cars as $car)
         @php 
-                                                                                                                                                                    $totalCost = $car->total_cost;
+                                                                                                                                                                            $totalCost = $car->total_cost;
             $expectedProfit = $car->selling_price ? ($car->selling_price - $totalCost) : 0;
         @endphp
         <div id="editCarModal{{ $car->id }}"

@@ -218,7 +218,10 @@ class DashboardController extends Controller
 
         return view('profit.index', compact(
             'soldCars',
+            'totalRevenue',
+            'totalCost',
             'totalProfit',
+            'soldCount',
             'avgProfit',
             'months',
             'profits',

@@ -1286,7 +1286,7 @@
                                     ราคาตั้งขาย</th>
                                 <th
                                     class="px-4 py-4 text-center text-xs font-bold text-emerald-600 uppercase tracking-wider whitespace-nowrap">
-                                    คาดการณ์กำไร</th>
+                                    กำไรคงเหลือจริง</th>
                                 <th
                                     class="px-2 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap">
                                     สรุป</th>
@@ -3856,7 +3856,7 @@
                             <!-- Expected Profit (for stock cars) -->
                             <div class="bg-{{ $expectedProfit >= 0 ? 'green' : 'red' }}-50 px-4 py-3 rounded-lg">
                                 <div class="flex justify-between items-center">
-                                    <span class="font-medium">กำไรคาดการณ์</span>
+                                    <span class="font-medium">กำไรคงเหลือจริง</span>
                                     <span class="text-xl font-bold text-{{ $expectedProfit >= 0 ? 'green' : 'red' }}-700">฿{{ number_format($expectedProfit, 0) }}</span>
                                 </div>
                             </div>

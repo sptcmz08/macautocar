@@ -139,13 +139,15 @@
                 <table class="w-full">
                     <thead>
                         <tr class="border-b-2 border-gray-200">
+                            <th class="text-left text-sm font-semibold text-gray-600 py-2 w-10">ลำดับ</th>
                             <th class="text-left text-sm font-semibold text-gray-600 py-2">รายการ</th>
                             <th class="text-right text-sm font-semibold text-gray-600 py-2">ค่าใช้จ่าย</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($car->refurbishments as $item)
+                        @foreach($car->refurbishments as $index => $item)
                             <tr class="border-b border-gray-50">
+                                <td class="text-sm text-gray-500 py-2.5">{{ $index + 1 }}</td>
                                 <td class="text-sm text-gray-700 py-2.5">{{ $item->name }}</td>
                                 <td class="text-sm text-gray-800 py-2.5 text-right">{{ number_format($item->amount, 0) }}</td>
                             </tr>
@@ -153,7 +155,7 @@
                     </tbody>
                     <tfoot>
                         <tr class="border-t-2 border-gray-200">
-                            <td class="text-sm font-bold text-gray-800 py-3">รวมค่าปรับสภาพ</td>
+                            <td colspan="2" class="text-sm font-bold text-gray-800 py-3">รวมค่าปรับสภาพ</td>
                             <td class="text-sm font-bold text-orange-600 py-3 text-right">
                                 {{ number_format($refurbCost, 0) }} บาท
                             </td>
@@ -225,7 +227,7 @@
                     <div
                         class="flex justify-between items-center py-4 {{ $profit >= 0 ? 'bg-green-50' : 'bg-red-50' }} rounded-lg px-4 -mx-1 mt-3">
                         <span class="text-lg font-bold {{ $profit >= 0 ? 'text-green-700' : 'text-red-700' }}">
-                            {{ $isSold ? 'กำไร' : 'กำไรคาดการณ์' }}
+                            {{ $isSold ? 'กำไร' : 'กำไรคงเหลือจริง' }}
                         </span>
                         <span class="text-xl font-bold {{ $profit >= 0 ? 'text-green-600' : 'text-red-600' }}">
                             = {{ $profit >= 0 ? '+' : '' }}{{ number_format($profit, 0) }} บาท
@@ -245,7 +247,7 @@
                 @if($displayPrice)
                     <div>• {{ $isSold ? 'ขาย' : 'ตั้งขาย' }} = <strong>{{ number_format($displayPrice, 0) }}</strong> บาท
                     </div>
-                    <div>• {{ $isSold ? 'กำไร' : 'กำไรคาดการณ์' }} = <strong
+                    <div>• {{ $isSold ? 'กำไร' : 'กำไรคงเหลือจริง' }} = <strong
                             class="{{ $profit >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $profit >= 0 ? '+' : '' }}{{ number_format($profit, 0) }}</strong>
                         บาท / คัน</div>
                 @endif

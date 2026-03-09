@@ -205,9 +205,9 @@
 
             </div>
 
-            <!-- Right: Sold Cars List -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-3xl premium-shadow overflow-hidden h-full flex flex-col">
+            <!-- Right: Sold Cars List (Full Width) -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-3xl premium-shadow overflow-hidden flex flex-col">
                     <div class="p-5 border-b bg-gradient-to-r from-gray-50 to-white">
                         <h3 class="font-bold text-gray-700 flex items-center gap-2">
                             <span
@@ -215,14 +215,19 @@
                             รายการรถที่ขายแล้ว
                         </h3>
                     </div>
-                    <div class="overflow-y-auto max-h-[500px] flex-1">
+                    <div class="overflow-x-auto flex-1">
                         <table class="w-full text-sm">
                             <thead class="text-xs text-gray-500 uppercase bg-gray-50 sticky top-0 z-10">
                                 <tr>
-                                    <th class="px-5 py-3 text-left w-12">#</th>
-                                    <th class="px-5 py-3 text-left">วันที่</th>
-                                    <th class="px-5 py-3 text-left">รถรุ่น</th>
-                                    <th class="px-5 py-3 text-right">กำไร</th>
+                                    <th class="px-4 py-3 text-center w-10">#</th>
+                                    <th class="px-4 py-3 text-left">วันที่ขาย</th>
+                                    <th class="px-4 py-3 text-left">รถรุ่น</th>
+                                    <th class="px-4 py-3 text-right">ทุนซื้อ</th>
+                                    <th class="px-4 py-3 text-right">ปรับสภาพ</th>
+                                    <th class="px-4 py-3 text-right">ต้นทุนรวม</th>
+                                    <th class="px-4 py-3 text-right">ราคาขาย</th>
+                                    <th class="px-4 py-3 text-right">กำไร</th>
+                                    <th class="px-3 py-3 text-center">สรุป</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
@@ -238,43 +243,76 @@
                                         $monthlyProfit = $cars->sum(function($car) {
                                             return $car->sold_price - $car->total_cost;
                                         });
+                                        $monthlyRevenue = $cars->sum('sold_price');
+                                        $monthlyCost = $cars->sum(function($car) {
+                                            return $car->total_cost;
+                                        });
                                     @endphp
                                     
                                     <!-- Monthly Header -->
                                     <tr class="bg-gray-50">
-                                        <td colspan="4" class="px-5 py-3 border-y border-gray-200">
+                                        <td colspan="9" class="px-4 py-3 border-y border-gray-200">
                                             <div class="flex justify-between items-center font-bold text-gray-700">
-                                                <span>{{ $month }}</span>
-                                                <span class="text-emerald-600">+฿{{ number_format($monthlyProfit, 0) }}</span>
+                                                <span>{{ $month }} ({{ $cars->count() }} คัน)</span>
+                                                <div class="flex items-center gap-4 text-xs">
+                                                    <span class="text-gray-500">ขาย ฿{{ number_format($monthlyRevenue, 0) }}</span>
+                                                    <span class="text-gray-500">ทุน ฿{{ number_format($monthlyCost, 0) }}</span>
+                                                    <span class="text-emerald-600 text-sm font-bold">กำไร +฿{{ number_format($monthlyProfit, 0) }}</span>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
 
                                     @foreach($cars as $car)
                                         @php
-                                            $profit = $car->sold_price - $car->total_cost;
+                                            $refurbCost = $car->refurbishments->sum('amount');
+                                            $carTotalCost = $car->total_cost;
+                                            $profit = $car->sold_price - $carTotalCost;
                                         @endphp
                                         <tr class="hover:bg-blue-50/50 transition-colors">
-                                            <td class="px-5 py-4 text-gray-400 text-xs">
+                                            <td class="px-4 py-3 text-center text-gray-400 text-xs">
                                                 {{ $globalIndex++ }}
                                             </td>
-                                            <td class="px-5 py-4 whitespace-nowrap">
+                                            <td class="px-4 py-3 whitespace-nowrap">
                                                 <div class="text-gray-600">{{ $car->sold_date ? \Carbon\Carbon::parse($car->sold_date)->format('d/m/Y') : '-' }}</div>
                                             </td>
-                                            <td class="px-5 py-4">
+                                            <td class="px-4 py-3">
                                                 <div class="font-medium text-gray-800">{{ $car->brand }} {{ $car->model }}</div>
                                                 <div class="text-xs text-gray-400">{{ $car->license_plate }}</div>
                                             </td>
-                                            <td class="px-5 py-4 text-right">
+                                            <td class="px-4 py-3 text-right whitespace-nowrap text-gray-700">
+                                                ฿{{ number_format($car->purchase_price, 0) }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap text-gray-500">
+                                                {{ $refurbCost > 0 ? '฿' . number_format($refurbCost, 0) : '-' }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap font-semibold text-gray-800">
+                                                ฿{{ number_format($carTotalCost, 0) }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap font-semibold text-blue-600">
+                                                ฿{{ number_format($car->sold_price, 0) }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap">
                                                 <span class="font-bold {{ $profit >= 0 ? 'text-emerald-600' : 'text-red-500' }}">
                                                     {{ $profit >= 0 ? '+' : '' }}฿{{ number_format($profit, 0) }}
                                                 </span>
+                                            </td>
+                                            <td class="px-3 py-3 text-center whitespace-nowrap">
+                                                <a href="{{ route('cars.show', $car) }}"
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-500 hover:text-indigo-700 transition-all"
+                                                    title="สรุปรายการ">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                                    </svg>
+                                                </a>
                                             </td>
                                         </tr>
                                     @endforeach
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-5 py-10 text-center text-gray-400">
+                                        <td colspan="9" class="px-5 py-10 text-center text-gray-400">
                                             <div class="flex flex-col items-center gap-2">
                                                 <span class="text-3xl">📭</span>
                                                 <span>ยังไม่มีข้อมูลการขาย</span>
@@ -285,6 +323,35 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Summary Footer -->
+                    @if($soldCount > 0)
+                        <div class="border-t-2 border-gray-200 bg-gradient-to-r from-slate-50 to-gray-50 p-5">
+                            <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                📊 สรุปรวมทั้งหมด ({{ $soldCount }} คัน)
+                            </h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div class="bg-white rounded-xl p-3 border border-gray-100">
+                                    <span class="block text-gray-400 text-xs mb-1">ยอดขายรวม</span>
+                                    <span class="font-bold text-blue-600 text-lg">฿{{ number_format($totalRevenue, 0) }}</span>
+                                </div>
+                                <div class="bg-white rounded-xl p-3 border border-gray-100">
+                                    <span class="block text-gray-400 text-xs mb-1">ต้นทุนรวม</span>
+                                    <span class="font-bold text-gray-800 text-lg">฿{{ number_format($totalCost, 0) }}</span>
+                                </div>
+                                <div class="bg-white rounded-xl p-3 border border-gray-100">
+                                    <span class="block text-gray-400 text-xs mb-1">กำไรเฉลี่ย/คัน</span>
+                                    <span class="font-bold text-amber-600 text-lg">฿{{ number_format($avgProfit, 0) }}</span>
+                                </div>
+                                <div class="bg-{{ $totalProfit >= 0 ? 'emerald' : 'red' }}-50 rounded-xl p-3 border border-{{ $totalProfit >= 0 ? 'emerald' : 'red' }}-200">
+                                    <span class="block text-gray-500 text-xs mb-1 font-semibold">กำไรสุทธิรวม</span>
+                                    <span class="font-bold {{ $totalProfit >= 0 ? 'text-emerald-600' : 'text-red-500' }} text-xl">
+                                        {{ $totalProfit >= 0 ? '+' : '' }}฿{{ number_format($totalProfit, 0) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

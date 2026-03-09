@@ -3826,7 +3826,7 @@
                             <div class="space-y-2">
                                 @foreach($car->refurbishments as $item)
                                     <div class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded group">
-                                        <span class="text-sm">{{ $item->name }}</span>
+                                        <span class="text-sm"><span class="text-gray-400 mr-1">{{ $loop->iteration }}.</span>{{ $item->name }}</span>
                                         <div class="flex items-center gap-3">
                                             <span class="text-sm text-orange-600 font-medium">฿{{ number_format($item->amount, 0) }}</span>
                                             <button type="button" onclick="deleteRefurb({{ $item->id }})"

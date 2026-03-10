@@ -92,6 +92,18 @@ class CapitalExpenseController extends Controller
         return redirect()->route('dashboard')->with('success', 'ปิดขายรายการทุนเรียบร้อยแล้ว');
     }
 
+    public function revertSold($id)
+    {
+        $expense = CapitalExpense::findOrFail($id);
+        $expense->update([
+            'status' => 'active',
+            'sold_price' => null,
+            'sold_date' => null,
+        ]);
+
+        return redirect()->back()->with('success', 'ยกเลิกการขาย "' . $expense->name . '" เรียบร้อยแล้ว กลับมาอยู่รายการทุนอื่นๆ');
+    }
+
     public function destroy(CapitalExpense $capitalExpense)
     {
         $capitalExpense->delete();

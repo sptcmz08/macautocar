@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/cars/{car}', [CarController::class, 'show'])->name('cars.show');
     Route::put('/cars/{car}', [CarController::class, 'update'])->name('cars.update');
     Route::post('/cars/{car}/sold', [CarController::class, 'markAsSold'])->name('cars.markAsSold');
+    Route::post('/cars/{car}/revert-sold', [CarController::class, 'revertSold'])->name('cars.revertSold');
     Route::delete('/cars/{car}', [CarController::class, 'destroy'])->name('cars.destroy');
     Route::post('/cars/check-license-plate', [CarController::class, 'checkLicensePlate'])->name('cars.checkLicensePlate');
 
@@ -59,6 +60,7 @@ Route::middleware('auth')->group(function () {
     // Capital Expense routes
     Route::resource('capital-expenses', CapitalExpenseController::class)->only(['show', 'store', 'update', 'destroy']);
     Route::post('/capital-expenses/{id}/sold', [CapitalExpenseController::class, 'markAsSold'])->name('capital-expenses.markAsSold');
+    Route::post('/capital-expenses/{id}/revert-sold', [CapitalExpenseController::class, 'revertSold'])->name('capital-expenses.revertSold');
 
     // Personal Transaction routes
     Route::post('/personal-transactions', [PersonalTransactionController::class, 'store'])->name('personal-transactions.store');

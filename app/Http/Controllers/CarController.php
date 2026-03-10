@@ -109,6 +109,17 @@ class CarController extends Controller
         $car->delete();
         return redirect()->route('dashboard')->with('success', 'ลบข้อมูลรถเรียบร้อยแล้ว');
     }
+
+    public function revertSold(Car $car)
+    {
+        $car->update([
+            'status' => 'stock',
+            'sold_date' => null,
+            'sold_price' => null,
+        ]);
+
+        return redirect()->back()->with('success', 'ยกเลิกการขายรถ ' . $car->brand . ' ' . $car->model . ' เรียบร้อยแล้ว กลับมาอยู่สต็อก');
+    }
     public function checkLicensePlate(Request $request)
     {
         $exists = Car::where('license_plate', $request->license_plate)

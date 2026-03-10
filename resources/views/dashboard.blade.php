@@ -3157,7 +3157,7 @@
                                 </div>
                             </label>
                             <label class="flex-1">
-                                <input type="radio" name="transmission" value="Auto" class="peer hidden">
+                                <input type="radio" name="transmission" value="A" class="peer hidden">
                                 <div
                                     class="peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-500 text-center py-2.5 px-4 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-blue-300 transition-all font-medium">
                                     <span class="text-lg">🅰️</span> Auto

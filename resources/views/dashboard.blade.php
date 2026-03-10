@@ -1370,6 +1370,9 @@
                                             @if($car->transmission)
                                                 · {{ $car->transmission == 'A' ? 'ออโต้' : 'เกียร์ธรรมดา' }}
                                             @endif
+                                            @if($car->year)
+                                                · ปี{{ $car->year }}
+                                            @endif
                                         </div>
                                         @if($car->license_plate)
                                             <div class="text-xs text-blue-500 font-medium mt-0.5">🔖 {{ $car->license_plate }}

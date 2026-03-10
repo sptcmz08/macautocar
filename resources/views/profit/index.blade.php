@@ -328,7 +328,7 @@
                     @if($soldCount > 0)
                         <div class="border-t-2 border-gray-200 bg-gradient-to-r from-slate-50 to-gray-50 p-5">
                             <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                                📊 สรุปรวมทั้งหมด ({{ $soldCount }} คัน)
+                                📊 สรุปรวมรถที่ขาย ({{ $soldCount }} คัน)
                             </h4>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div class="bg-white rounded-xl p-3 border border-gray-100">
@@ -343,15 +343,135 @@
                                     <span class="block text-gray-400 text-xs mb-1">กำไรเฉลี่ย/คัน</span>
                                     <span class="font-bold text-amber-600 text-lg">฿{{ number_format($avgProfit, 0) }}</span>
                                 </div>
-                                <div class="bg-{{ $totalProfit >= 0 ? 'emerald' : 'red' }}-50 rounded-xl p-3 border border-{{ $totalProfit >= 0 ? 'emerald' : 'red' }}-200">
-                                    <span class="block text-gray-500 text-xs mb-1 font-semibold">กำไรสุทธิรวม</span>
-                                    <span class="font-bold {{ $totalProfit >= 0 ? 'text-emerald-600' : 'text-red-500' }} text-xl">
-                                        {{ $totalProfit >= 0 ? '+' : '' }}฿{{ number_format($totalProfit, 0) }}
+                                <div class="bg-{{ $carProfit >= 0 ? 'emerald' : 'red' }}-50 rounded-xl p-3 border border-{{ $carProfit >= 0 ? 'emerald' : 'red' }}-200">
+                                    <span class="block text-gray-500 text-xs mb-1 font-semibold">กำไรจากรถ</span>
+                                    <span class="font-bold {{ $carProfit >= 0 ? 'text-emerald-600' : 'text-red-500' }} text-xl">
+                                        {{ $carProfit >= 0 ? '+' : '' }}฿{{ number_format($carProfit, 0) }}
                                     </span>
                                 </div>
                             </div>
                         </div>
                     @endif
+                </div>
+            </div>
+
+            <!-- Sold Capital Expenses Section -->
+            @if($soldCapitalExpenses->count() > 0)
+                <div class="lg:col-span-3 mt-6">
+                    <div class="bg-white rounded-3xl premium-shadow overflow-hidden flex flex-col">
+                        <div class="p-5 border-b bg-gradient-to-r from-purple-50 to-indigo-50">
+                            <h3 class="font-bold text-purple-800 flex items-center gap-2">
+                                <span class="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center text-xs">💰</span>
+                                รายการทุนอื่นๆที่ขายแล้ว ({{ $soldCapitalExpenses->count() }} รายการ)
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto flex-1">
+                            <table class="w-full text-sm">
+                                <thead class="text-xs text-gray-500 uppercase bg-purple-50/50 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-4 py-3 text-center w-10">#</th>
+                                        <th class="px-4 py-3 text-left">วันที่ขาย</th>
+                                        <th class="px-4 py-3 text-left">รายการ</th>
+                                        <th class="px-4 py-3 text-right">ทุนตั้งต้น</th>
+                                        <th class="px-4 py-3 text-right">รับคืนแล้ว</th>
+                                        <th class="px-4 py-3 text-right">ทุนคงเหลือ</th>
+                                        <th class="px-4 py-3 text-right">ราคาขาย</th>
+                                        <th class="px-4 py-3 text-right">กำไร/ขาดทุน</th>
+                                        <th class="px-3 py-3 text-center">สรุป</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach($soldCapitalExpenses as $index => $expense)
+                                        @php
+                                            $decreasesSum = $capitalExpenses->where('parent_id', $expense->id)->sum('amount');
+                                            $remainingCost = $expense->amount - $decreasesSum;
+                                            $expProfit = ($expense->sold_price ?? 0) - $remainingCost;
+                                        @endphp
+                                        <tr class="hover:bg-purple-50/30 transition-colors">
+                                            <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $loop->iteration }}</td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <div class="text-gray-600">{{ $expense->sold_date ? \Carbon\Carbon::parse($expense->sold_date)->addYears(543)->format('d/m/Y') : '-' }}</div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="font-medium text-gray-800">{{ $expense->name }}</div>
+                                                @if($expense->description)
+                                                    <div class="text-xs text-gray-400">{{ Str::limit($expense->description, 40) }}</div>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap text-gray-700">
+                                                ฿{{ number_format($expense->amount, 0) }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap text-gray-500">
+                                                {{ $decreasesSum > 0 ? '฿' . number_format($decreasesSum, 0) : '-' }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap font-semibold text-gray-800">
+                                                ฿{{ number_format($remainingCost, 0) }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap font-semibold text-purple-600">
+                                                ฿{{ number_format($expense->sold_price ?? 0, 0) }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                                <span class="font-bold {{ $expProfit >= 0 ? 'text-emerald-600' : 'text-red-500' }}">
+                                                    {{ $expProfit >= 0 ? '+' : '' }}฿{{ number_format($expProfit, 0) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-3 py-3 text-center whitespace-nowrap">
+                                                <a href="{{ route('capital-expenses.show', $expense->id) }}"
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-500 hover:text-purple-700 transition-all"
+                                                    title="สรุปรายการ">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                                    </svg>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Capital Expenses Summary Footer -->
+                        <div class="border-t-2 border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 p-5">
+                            <h4 class="text-sm font-bold text-purple-700 mb-3 flex items-center gap-2">
+                                💰 สรุปกำไรจากทุนอื่นๆ ({{ $soldCapitalExpenses->count() }} รายการ)
+                            </h4>
+                            <div class="bg-{{ $capitalExpensesProfit >= 0 ? 'emerald' : 'red' }}-50 rounded-xl p-3 border border-{{ $capitalExpensesProfit >= 0 ? 'emerald' : 'red' }}-200 inline-block">
+                                <span class="block text-gray-500 text-xs mb-1 font-semibold">กำไรจากทุนอื่นๆ</span>
+                                <span class="font-bold {{ $capitalExpensesProfit >= 0 ? 'text-emerald-600' : 'text-red-500' }} text-xl">
+                                    {{ $capitalExpensesProfit >= 0 ? '+' : '' }}฿{{ number_format($capitalExpensesProfit, 0) }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Grand Total Combined -->
+            <div class="lg:col-span-3 mt-6">
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl p-6 premium-shadow">
+                    <h4 class="text-white font-bold text-lg mb-4 flex items-center gap-2">🏆 กำไรสุทธิรวมทั้งหมด</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                            <span class="block text-gray-300 text-xs mb-1">🚗 กำไรจากรถ</span>
+                            <span class="font-bold {{ $carProfit >= 0 ? 'text-emerald-400' : 'text-red-400' }} text-xl">
+                                {{ $carProfit >= 0 ? '+' : '' }}฿{{ number_format($carProfit, 0) }}
+                            </span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                            <span class="block text-gray-300 text-xs mb-1">💰 กำไรจากทุนอื่นๆ</span>
+                            <span class="font-bold {{ $capitalExpensesProfit >= 0 ? 'text-purple-400' : 'text-red-400' }} text-xl">
+                                {{ $capitalExpensesProfit >= 0 ? '+' : '' }}฿{{ number_format($capitalExpensesProfit, 0) }}
+                            </span>
+                        </div>
+                        <div class="bg-emerald-500/20 backdrop-blur rounded-2xl p-4 border border-emerald-400/30">
+                            <span class="block text-emerald-300 text-xs mb-1 font-semibold">✨ กำไรสุทธิรวม</span>
+                            <span class="font-bold {{ $totalProfit >= 0 ? 'text-emerald-400' : 'text-red-400' }} text-2xl">
+                                {{ $totalProfit >= 0 ? '+' : '' }}฿{{ number_format($totalProfit, 0) }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

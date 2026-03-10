@@ -178,18 +178,30 @@ class DashboardController extends Controller
     {
         $soldCars = Car::with('refurbishments')->where('status', 'sold')->orderBy('sold_date', 'desc')->get();
 
-        // Calculate totals
+        // Calculate car totals
         $totalRevenue = $soldCars->sum('sold_price');
         $totalCost = $soldCars->sum(function ($car) {
             return $car->total_cost;
         });
-        $totalProfit = $totalRevenue - $totalCost;
+        $carProfit = $totalRevenue - $totalCost;
         $soldCount = $soldCars->count();
-        $avgProfit = $soldCount > 0 ? $totalProfit / $soldCount : 0;
+        $avgProfit = $soldCount > 0 ? $carProfit / $soldCount : 0;
+
+        // Sold Capital Expenses
+        $capitalExpenses = \App\Models\CapitalExpense::orderBy('date', 'desc')->get();
+        $soldCapitalExpenses = $capitalExpenses->where('status', 'sold')->where('transaction_type', 'increase');
+        $capitalExpensesProfit = $soldCapitalExpenses->sum(function ($expense) use ($capitalExpenses) {
+            $decreasesSum = $capitalExpenses->where('parent_id', $expense->id)->sum('amount');
+            $remainingCost = $expense->amount - $decreasesSum;
+            return ($expense->sold_price ?? 0) - $remainingCost;
+        });
+
+        // Combined total profit
+        $totalProfit = $carProfit + $capitalExpensesProfit;
 
         // Monthly Profit for Graph
         $monthlyStats = $soldCars->groupBy(function ($car) {
-            return $car->sold_date ? \Carbon\Carbon::parse($car->sold_date)->format('Y-m') : 'Unknown'; // Group by Year-Month
+            return $car->sold_date ? \Carbon\Carbon::parse($car->sold_date)->format('Y-m') : 'Unknown';
         })->map(function ($group) {
             $revenue = $group->sum('sold_price');
             $cost = $group->sum(function ($car) {
@@ -200,21 +212,16 @@ class DashboardController extends Controller
 
         // Prepare chart data
         $months = $monthlyStats->keys()->map(function ($m) {
-            // Convert 2026-01 to Jan 2026 (Thai?) 
-            // Simple approach: stick to Y-m or use array of Thai months
             return $m;
         });
         $profits = $monthlyStats->values();
 
-        // Simulation: Reinvestment (Stock from Profit)
-        // Assume avg cost per car is around 200,000 (just a guess or calc avg from stock/sold)
-        // Let's use avg purchase price of sold cars as baseline
+        // Simulation
         $avgPurchasePrice = $soldCars->avg('purchase_price') ?: 200000;
         $potentialStockCount = $avgPurchasePrice > 0 ? floor($totalProfit / $avgPurchasePrice) : 0;
 
         // Target
         $setting = Setting::first();
-        // Prevent DivisionByZero: Default to 1,000,000 if null or 0
         $targetProfit = ($setting && $setting->target_profit > 0) ? $setting->target_profit : 1000000;
         $progressPercent = ($totalProfit / $targetProfit) * 100;
 
@@ -222,6 +229,7 @@ class DashboardController extends Controller
             'soldCars',
             'totalRevenue',
             'totalCost',
+            'carProfit',
             'totalProfit',
             'soldCount',
             'avgProfit',
@@ -229,7 +237,10 @@ class DashboardController extends Controller
             'profits',
             'potentialStockCount',
             'progressPercent',
-            'targetProfit'
+            'targetProfit',
+            'soldCapitalExpenses',
+            'capitalExpenses',
+            'capitalExpensesProfit'
         ));
     }
 

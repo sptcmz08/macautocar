@@ -1520,6 +1520,9 @@
                             <th
                                 class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
                                 ลำดับ</th>
+                            <th
+                                class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                                รูป</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 ชื่อรายการ</th>
                             <th
@@ -1540,6 +1543,19 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500 text-sm row-number-cell">
                                     {{ $index + 1 }}
+                                </td>
+                                <td class="px-2 py-3 text-center">
+                                    @if($part->image)
+                                        <img src="{{ '/img/' . $part->image }}" alt="{{ $part->name }}"
+                                            class="w-12 h-12 object-cover rounded-lg shadow-sm cursor-pointer hover:scale-110 transition-transform"
+                                            onclick="event.stopPropagation(); openGallery(['/img/{{ $part->image }}'])">
+                                    @else
+                                        <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm font-medium text-gray-900">{{ $part->name }}</span>
@@ -1596,7 +1612,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-gray-400">
+                                <td colspan="7" class="px-6 py-10 text-center text-gray-400">
                                     ยังไม่มีรายการอะไหล่ในสต็อก
                                 </td>
                             </tr>
@@ -1615,6 +1631,9 @@
                             <th
                                 class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider w-16">
                                 ลำดับ</th>
+                            <th
+                                class="px-2 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider w-16">
+                                รูป</th>
                             <th class="px-4 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                                 วันที่</th>
                             <th class="px-4 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -1642,6 +1661,19 @@
                             <tr class="hover:bg-blue-50/30 transition {{ $isSold ? 'bg-gray-50 opacity-60' : '' }}">
                                 <td class="px-4 py-4 whitespace-nowrap text-center text-gray-500 text-sm row-number-cell">
                                     {{ $index + 1 }}
+                                </td>
+                                <td class="px-2 py-3 text-center">
+                                    @if($expense->image)
+                                        <img src="{{ '/img/' . $expense->image }}" alt="{{ $expense->name }}"
+                                            class="w-12 h-12 object-cover rounded-lg shadow-sm cursor-pointer hover:scale-110 transition-transform"
+                                            onclick="event.stopPropagation(); openGallery(['/img/{{ $expense->image }}'])">
+                                    @else
+                                        <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
                                     {{ \Carbon\Carbon::parse($expense->date)->addYears(543)->format('d/m/Y') }}
@@ -1981,7 +2013,7 @@
                     <button onclick="document.getElementById('addPartModal').classList.add('hidden')"
                         class="text-gray-400 hover:text-gray-600">&times;</button>
                 </div>
-                <form action="{{ route('parts.store') }}" method="POST" class="p-4 space-y-4">
+                <form action="{{ route('parts.store') }}" method="POST" enctype="multipart/form-data" class="p-4 space-y-4">
                     @csrf
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">ชื่ออะไหล่</label>
@@ -2002,6 +2034,14 @@
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="1"
                                 required>
                         </div>
+                    </div>
+                    <!-- Image Upload for Part -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">📷 รูปภาพ (ไม่บังคับ)</label>
+                        <input type="file" name="image" accept="image/*"
+                            onchange="previewSingleImage(this, 'addPartImagePreview')"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <div id="addPartImagePreview" class="mt-2"></div>
                     </div>
                     <div class="flex gap-3 pt-2">
                         <button type="button" onclick="document.getElementById('addPartModal').classList.add('hidden')"
@@ -2983,7 +3023,7 @@
                     <button onclick="document.getElementById('editPartModal').classList.add('hidden')"
                         class="text-gray-400 hover:text-gray-600">&times;</button>
                 </div>
-                <form id="editPartForm" method="POST" class="p-4 space-y-4">
+                <form id="editPartForm" method="POST" enctype="multipart/form-data" class="p-4 space-y-4">
                     @csrf
                     @method('PUT')
                     <div>
@@ -3002,6 +3042,20 @@
                             <input type="number" name="quantity" id="editPartQuantityInput"
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
                         </div>
+                    </div>
+                    <!-- Image Upload for Edit Part -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">📷 รูปภาพ</label>
+                        <div id="editPartCurrentImage" class="mb-2 hidden">
+                            <div class="relative inline-block">
+                                <img id="editPartCurrentImageSrc" src="" alt="" class="w-24 h-24 object-cover rounded-lg border">
+                                <span class="text-xs text-gray-400 block mt-1">รูปปัจจุบัน</span>
+                            </div>
+                        </div>
+                        <input type="file" name="image" accept="image/*"
+                            onchange="previewSingleImage(this, 'editPartImagePreview')"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <div id="editPartImagePreview" class="mt-2"></div>
                     </div>
                     <div class="flex gap-3 pt-2">
                         <button type="button" onclick="document.getElementById('editPartModal').classList.add('hidden')"
@@ -4258,6 +4312,17 @@
             document.getElementById('editPartNameInput').value = part.name;
             document.getElementById('editPartPriceInput').value = part.unit_price;
             document.getElementById('editPartQuantityInput').value = part.quantity;
+            // Show current image if exists
+            var currentImgDiv = document.getElementById('editPartCurrentImage');
+            var currentImgSrc = document.getElementById('editPartCurrentImageSrc');
+            if (part.image) {
+                currentImgSrc.src = '/img/' + part.image;
+                currentImgDiv.classList.remove('hidden');
+            } else {
+                currentImgDiv.classList.add('hidden');
+            }
+            // Clear preview
+            document.getElementById('editPartImagePreview').innerHTML = '';
             document.getElementById('editPartModal').classList.remove('hidden');
         }
 

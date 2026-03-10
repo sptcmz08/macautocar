@@ -12,5 +12,6 @@ class Part extends Model
         'name',
         'quantity',
         'unit_price',
+        'image',
     ];
 }

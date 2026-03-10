@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PartController extends Controller
 {
@@ -20,9 +21,20 @@ class PartController extends Controller
             'name' => 'required|string|max:255',
             'quantity' => 'required|integer|min:0',
             'unit_price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:51200',
         ]);
 
-        \App\Models\Part::create($request->all());
+        $data = [
+            'name' => $request->name,
+            'quantity' => $request->quantity,
+            'unit_price' => $request->unit_price,
+        ];
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('part-images', 'public');
+        }
+
+        \App\Models\Part::create($data);
 
         return redirect()->route('dashboard', ['tab' => 'parts'])->with('success', 'เพิ่มอะไหล่เรียบร้อยแล้ว');
     }
@@ -33,9 +45,24 @@ class PartController extends Controller
             'name' => 'required|string|max:255',
             'quantity' => 'required|integer|min:0',
             'unit_price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:51200',
         ]);
 
-        $part->update($request->all());
+        $data = [
+            'name' => $request->name,
+            'quantity' => $request->quantity,
+            'unit_price' => $request->unit_price,
+        ];
+
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($part->image) {
+                Storage::disk('public')->delete($part->image);
+            }
+            $data['image'] = $request->file('image')->store('part-images', 'public');
+        }
+
+        $part->update($data);
 
         return redirect()->route('dashboard', ['tab' => 'parts'])->with('success', 'อัปเดตอะไหล่เรียบร้อยแล้ว');
     }
@@ -78,6 +105,9 @@ class PartController extends Controller
     public function forceDelete($id)
     {
         $part = \App\Models\Part::onlyTrashed()->findOrFail($id);
+        if ($part->image) {
+            Storage::disk('public')->delete($part->image);
+        }
         $part->forceDelete();
         return redirect()->route('trash')->with('success', 'ลบอะไหล่ถาวรเรียบร้อยแล้ว');
     }

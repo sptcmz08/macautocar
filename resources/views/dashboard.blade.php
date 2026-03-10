@@ -1314,7 +1314,7 @@
                                     class="table-row-premium hover:bg-blue-50/50 transition-all duration-200">
 
                                     <!-- 1. Order -->
-                                    <td class="px-4 py-4 text-center text-slate-600 font-medium whitespace-nowrap"
+                                    <td class="px-4 py-4 text-center text-slate-600 font-medium whitespace-nowrap row-number-cell"
                                         onclick="openEditModal({{ $car->id }})">
                                         {{ $index + 1 }}
                                     </td>
@@ -1538,7 +1538,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($parts as $index => $part)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500 text-sm">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500 text-sm row-number-cell">
                                     {{ $index + 1 }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -1640,7 +1640,7 @@
                                 $remaining = $expense->amount - $decreasesSum;
                             @endphp
                             <tr class="hover:bg-blue-50/30 transition {{ $isSold ? 'bg-gray-50 opacity-60' : '' }}">
-                                <td class="px-4 py-4 whitespace-nowrap text-center text-gray-500 text-sm">
+                                <td class="px-4 py-4 whitespace-nowrap text-center text-gray-500 text-sm row-number-cell">
                                     {{ $index + 1 }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -4219,8 +4219,30 @@
                 if (typeof window.carPaginationRender === 'function') {
                     window.carPaginationRender();
                 }
+
+                // Renumber visible rows
+                renumberVisibleRows();
             }
         }
+
+        // Renumber visible rows sequentially (1, 2, 3...) after filtering
+        function renumberVisibleRows() {
+            document.querySelectorAll('#carTable, #partTable, #expenseTable').forEach(function(table) {
+                if (!table) return;
+                var counter = 0;
+                table.querySelectorAll('tbody tr').forEach(function(row) {
+                    if (!row.classList.contains('hidden') && row.querySelector('.row-number-cell')) {
+                        counter++;
+                        row.querySelector('.row-number-cell').textContent = counter;
+                    }
+                });
+            });
+        }
+
+        // Initial renumber on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            renumberVisibleRows();
+        });
 
         // Parts Management Functions
         function usePart(part) {

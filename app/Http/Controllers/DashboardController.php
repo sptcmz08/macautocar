@@ -113,6 +113,8 @@ class DashboardController extends Controller
                 'capitalExpenses',
                 'capitalExpensesTotal',
                 'capitalExpensesActiveTotal',
+                'capitalExpensesProfit',
+                'soldCapitalExpenses',
                 'personalTransactions',
                 'personalIncome',
                 'personalExpense',

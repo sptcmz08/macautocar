@@ -1650,7 +1650,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @php
-                            $increaseExpenses = $capitalExpenses->where('transaction_type', 'increase');
+                            $increaseExpenses = $capitalExpenses->where('transaction_type', 'increase')->where('status', '!=', 'sold');
                         @endphp
                         @forelse($increaseExpenses as $index => $expense)
                             @php

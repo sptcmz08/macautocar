@@ -93,30 +93,26 @@ Route::middleware('auth')->group(function () {
         ]);
     })->where('path', '.*')->name('storage.serve');
 
+    // Setup route (requires login)
+    Route::get('/setup-macauto-2026', function () {
+        try {
+            $output = '<h2>🔧 Setup Helper</h2>';
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            $output .= '<p>✅ Config cleared</p>';
+            \Illuminate\Support\Facades\Artisan::call('route:clear');
+            $output .= '<p>✅ Route cleared</p>';
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+            $output .= '<p>✅ View cleared</p>';
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            $output .= '<p>✅ Cache cleared</p>';
+            \Illuminate\Support\Facades\Artisan::call('migrate', ["--force" => true]);
+            $output .= '<h3>📦 Migration Output:</h3><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
+            return $output;
+        } catch (\Exception $e) {
+            return 'Error: ' . $e->getMessage();
+        }
+    });
+
 });
 
-// Temporary setup route (ลบหลังใช้งานครั้งแรก!)
-Route::get('/setup-macauto-2026', function () {
-    try {
-        $output = '<h2>🔧 Setup Helper</h2>';
 
-        \Illuminate\Support\Facades\Artisan::call('config:clear');
-        $output .= '<p>✅ Config cleared</p>';
-
-        \Illuminate\Support\Facades\Artisan::call('route:clear');
-        $output .= '<p>✅ Route cleared</p>';
-
-        \Illuminate\Support\Facades\Artisan::call('view:clear');
-        $output .= '<p>✅ View cleared</p>';
-
-        \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        $output .= '<p>✅ Cache cleared</p>';
-
-        \Illuminate\Support\Facades\Artisan::call('migrate', ["--force" => true]);
-        $output .= '<h3>📦 Migration Output:</h3><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
-
-        return $output;
-    } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage() . '<br>File: ' . $e->getFile() . ':' . $e->getLine();
-    }
-});

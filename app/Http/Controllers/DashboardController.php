@@ -127,7 +127,7 @@ class DashboardController extends Controller
                 'branches'
             ));
         } catch (\Exception $e) {
-            dd($e->getMessage(), $e->getFile(), $e->getLine());
+            return redirect()->route('login')->with('error', 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
         }
     }
 

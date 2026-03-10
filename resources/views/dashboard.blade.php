@@ -4590,7 +4590,7 @@
         
         // Auto-open Add Car Modal if there are errors
         @if($errors->any())
-            alert('มีข้อผิดพลาดในข้อมูลที่กรอก: \n' + {!! json_encode(implode('\n', $errors->all())) !!});
+            alert('มีข้อผิดพลาดในข้อมูลที่กรอก: \n' + @json(implode("\n", $errors->all())));
             @if($errors->has('brand') || $errors->has('model') || $errors->has('year'))
                  document.getElementById('addCarModal').classList.remove('hidden');
             @endif

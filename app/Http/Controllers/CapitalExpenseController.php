@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class CapitalExpenseController extends Controller
 {
+    public function show($id)
+    {
+        $expense = CapitalExpense::with('decreases')->findOrFail($id);
+        return view('capital-expenses.show', compact('expense'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

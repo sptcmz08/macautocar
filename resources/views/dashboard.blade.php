@@ -1727,6 +1727,11 @@
                                                 ปิดขาย
                                             </button>
                                         @endif
+                                        <a href="{{ route('capital-expenses.show', $expense->id) }}"
+                                            class="bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 rounded text-xs font-medium inline-block"
+                                            title="ดูสรุป">
+                                            📋
+                                        </a>
                                         <button
                                             onclick="editExpense({{ $expense->id }}, '{{ addslashes($expense->name) }}', '{{ $expense->date->format('Y-m-d') }}', {{ $expense->amount }}, '{{ addslashes(str_replace(["\r\n", "\r", "\n"], ' ', $expense->description ?? '')) }}', 'increase', '{{ $expense->image ?? '' }}')"
                                             class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs font-medium">
@@ -1746,7 +1751,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-10 text-center text-gray-400">
+                                <td colspan="8" class="px-6 py-10 text-center text-gray-400">
                                     ยังไม่มีรายการทุนอื่นๆ
                                 </td>
                             </tr>
@@ -1754,7 +1759,7 @@
                     </tbody>
                     <tfoot class="bg-gradient-to-r from-slate-100 to-blue-50 font-bold">
                         <tr>
-                            <td colspan="5" class="px-4 py-3 text-right text-gray-600">รวมคงเหลือ</td>
+                            <td colspan="6" class="px-4 py-3 text-right text-gray-600">รวมคงเหลือ</td>
                             <td class="px-4 py-3 text-right text-blue-600 text-lg">
                                 ฿{{ number_format($capitalExpensesActiveTotal, 0) }}</td>
                             <td></td>

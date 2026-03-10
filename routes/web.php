@@ -57,7 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('parts', PartController::class);
 
     // Capital Expense routes
-    Route::resource('capital-expenses', CapitalExpenseController::class)->only(['store', 'update', 'destroy']);
+    Route::resource('capital-expenses', CapitalExpenseController::class)->only(['show', 'store', 'update', 'destroy']);
     Route::post('/capital-expenses/{id}/sold', [CapitalExpenseController::class, 'markAsSold'])->name('capital-expenses.markAsSold');
 
     // Personal Transaction routes

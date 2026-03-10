@@ -3816,6 +3816,14 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">เกียร์</label>
+                        <select name="transmission" class="w-full bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-sm">
+                            <option value="A" {{ $car->transmission == 'A' ? 'selected' : '' }}>ออโต้ (AT)</option>
+                            <option value="M" {{ $car->transmission == 'M' ? 'selected' : '' }}>ธรรมดา (MT)</option>
+                        </select>
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">เลขทะเบียน</label>
                         <input type="text" name="license_plate" id="editLicensePlate{{ $car->id }}" value="{{ old('license_plate', $car->license_plate) }}"
                             class="w-full bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-sm @error('license_plate') border-red-500 @enderror">

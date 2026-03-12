@@ -1253,15 +1253,15 @@
         <!-- Car List Table - Premium Design -->
         <div id="carSection">
             <!-- Zoom Controls -->
-            <div class="flex items-center gap-2 mb-2 px-1">
+            <div class="flex items-center gap-2 mb-2 px-1 zoom-controls">
                 <span class="text-xs text-gray-500">🔍 ขนาด:</span>
-                <button type="button" onclick="setTableZoom(0.25)"
+                <button type="button" onclick="setTableZoom(0.25, 'carTableWrapper')"
                     class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">25%</button>
-                <button type="button" onclick="setTableZoom(0.50)"
+                <button type="button" onclick="setTableZoom(0.50, 'carTableWrapper')"
                     class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">50%</button>
-                <button type="button" onclick="setTableZoom(0.75)"
+                <button type="button" onclick="setTableZoom(0.75, 'carTableWrapper')"
                     class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">75%</button>
-                <button type="button" onclick="setTableZoom(1)"
+                <button type="button" onclick="setTableZoom(1, 'carTableWrapper')"
                     class="zoom-btn px-2 py-1 text-xs rounded bg-blue-500 text-white">100%</button>
             </div>
             <div class="glass-card overflow-x-auto table-responsive">
@@ -1511,21 +1511,38 @@
 
         <script>
         window.carPaginationRender = function() {};
-        function setTableZoom(scale) {
-            var wrapper = document.getElementById('carTableWrapper');
+        function setTableZoom(scale, wrapperId) {
+            wrapperId = wrapperId || 'carTableWrapper';
+            var wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
             wrapper.style.transform = 'scale(' + scale + ')';
             wrapper.style.width = (100 / scale) + '%';
-            // Update button styles
-            document.querySelectorAll('.zoom-btn').forEach(function(btn) {
-                btn.classList.remove('bg-blue-500', 'text-white');
-                btn.classList.add('bg-gray-100', 'text-gray-600');
-            });
+            // Update button styles within the same zoom group
+            var container = event.target.closest('.zoom-controls');
+            if (container) {
+                container.querySelectorAll('.zoom-btn').forEach(function(btn) {
+                    btn.classList.remove('bg-blue-500', 'text-white');
+                    btn.classList.add('bg-gray-100', 'text-gray-600');
+                });
+            }
             event.target.classList.remove('bg-gray-100', 'text-gray-600');
             event.target.classList.add('bg-blue-500', 'text-white');
         }
         </script>
         <div id="partSection" class="hidden">
+            <div class="flex items-center gap-2 mb-2 px-1 zoom-controls">
+                <span class="text-xs text-gray-500">🔍 ขนาด:</span>
+                <button type="button" onclick="setTableZoom(0.25, 'partTableWrapper')"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">25%</button>
+                <button type="button" onclick="setTableZoom(0.50, 'partTableWrapper')"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">50%</button>
+                <button type="button" onclick="setTableZoom(0.75, 'partTableWrapper')"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">75%</button>
+                <button type="button" onclick="setTableZoom(1, 'partTableWrapper')"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-blue-500 text-white">100%</button>
+            </div>
             <div class="bg-white shadow rounded-lg overflow-x-auto table-responsive">
+                <div id="partTableWrapper" style="transform-origin: top left; transition: transform 0.3s ease;">
                 <table class="min-w-full divide-y divide-gray-200" id="partTable">
                     <thead class="bg-gray-50">
                         <tr>
@@ -1631,12 +1648,25 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 
         <!-- Expenses List Table (Hidden by default) -->
         <div id="expenseSection" class="hidden">
+            <div class="flex items-center gap-2 mb-2 px-1 zoom-controls">
+                <span class="text-xs text-gray-500">🔍 ขนาด:</span>
+                <button type="button" onclick="setTableZoom(0.25, 'expenseTableWrapper')"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">25%</button>
+                <button type="button" onclick="setTableZoom(0.50, 'expenseTableWrapper')"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">50%</button>
+                <button type="button" onclick="setTableZoom(0.75, 'expenseTableWrapper')"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-blue-100">75%</button>
+                <button type="button" onclick="setTableZoom(1, 'expenseTableWrapper')"
+                    class="zoom-btn px-2 py-1 text-xs rounded bg-blue-500 text-white">100%</button>
+            </div>
             <div class="bg-white shadow rounded-lg overflow-x-auto table-responsive">
+                <div id="expenseTableWrapper" style="transform-origin: top left; transition: transform 0.3s ease;">
                 <table class="min-w-full divide-y divide-gray-200" id="expenseTable">
                     <thead class="bg-gradient-to-r from-slate-50 to-blue-50/50">
                         <tr>
@@ -1778,6 +1808,7 @@
                         </tr>
                     </tfoot>
                 </table>
+                </div>
             </div>
 
             <!-- Sold Capital Expenses Section -->

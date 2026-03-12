@@ -1224,19 +1224,10 @@
                 </svg>
                 ไปหน้าบัญชี/สรุปกำไร
             </a>
-            <a href="{{ route('stock.summary') }}"
-                class="ml-auto px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-4 h-4">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
-                </svg>
-                📋 สรุปสต็อกรายสาขา
-            </a>
         </div>
 
         <!-- Search -Premium -->
-        <div class="mb-5 relative">
+        <div class="mb-3 relative">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                     fill="currentColor">
@@ -1248,6 +1239,11 @@
             <input type="text" placeholder="🔍 ค้นหารุ่น, ทะเบียน, หมายเหตุ..."
                 class="w-full bg-white/90 backdrop-blur-sm border-2 border-gray-200 rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md"
                 id="searchInput" oninput="filterTable()">
+        </div>
+        <div class="flex items-center justify-end mb-3 px-1">
+            <a href="{{ route('stock.summary') }}" class="inline-flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">
+                📋 สรุปสต็อกรายสาขา →
+            </a>
         </div>
 
         <!-- Car List Table - Premium Design -->

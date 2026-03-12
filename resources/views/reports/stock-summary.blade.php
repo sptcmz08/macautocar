@@ -99,7 +99,23 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Zoom Controls -->
+        <div class="flex items-center gap-2 mb-4 px-1 no-print zoom-controls">
+            <span class="text-xs text-gray-500">🔍 ขนาด:</span>
+            <button type="button" onclick="setPageZoom(0.25)"
+                class="zoom-btn px-3 py-1.5 text-xs rounded-lg bg-gray-100 text-gray-600 hover:bg-blue-100 font-medium transition-all">25%</button>
+            <button type="button" onclick="setPageZoom(0.50)"
+                class="zoom-btn px-3 py-1.5 text-xs rounded-lg bg-gray-100 text-gray-600 hover:bg-blue-100 font-medium transition-all">50%</button>
+            <button type="button" onclick="setPageZoom(0.75)"
+                class="zoom-btn px-3 py-1.5 text-xs rounded-lg bg-gray-100 text-gray-600 hover:bg-blue-100 font-medium transition-all">75%</button>
+            <button type="button" onclick="setPageZoom(1)"
+                class="zoom-btn px-3 py-1.5 text-xs rounded-lg bg-blue-500 text-white font-medium transition-all">100%</button>
+        </div>
+
+        <div id="stockSummaryWrapper" style="transform-origin: top left; transition: transform 0.3s ease;">
+        <div class="space-y-6">
 
         <!-- Overall Summary Cards -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -405,6 +421,26 @@
             </div>
         </div>
     </div>
+    </div>
+    </div>
+
+    <script>
+    function setPageZoom(scale) {
+        var wrapper = document.getElementById('stockSummaryWrapper');
+        if (!wrapper) return;
+        wrapper.style.transform = 'scale(' + scale + ')';
+        wrapper.style.width = (100 / scale) + '%';
+        var container = event.target.closest('.zoom-controls');
+        if (container) {
+            container.querySelectorAll('.zoom-btn').forEach(function(btn) {
+                btn.classList.remove('bg-blue-500', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-600');
+            });
+        }
+        event.target.classList.remove('bg-gray-100', 'text-gray-600');
+        event.target.classList.add('bg-blue-500', 'text-white');
+    }
+    </script>
 
 </body>
 

@@ -244,6 +244,44 @@ class DashboardController extends Controller
         ));
     }
 
+    public function stockSummary()
+    {
+        $stockCars = Car::with(['refurbishments', 'branch'])
+            ->where('status', 'stock')
+            ->orderBy('branch_id')
+            ->orderBy('brand')
+            ->get();
+
+        $branches = \App\Models\Branch::orderBy('sort_order')->get();
+
+        // Group by branch
+        $groupedByBranch = $stockCars->groupBy(function ($car) {
+            return $car->branch_id ?? 0;
+        });
+
+        // Overall totals
+        $totalCars = $stockCars->count();
+        $totalPurchase = $stockCars->sum('purchase_price');
+        $totalRefurb = $stockCars->sum(function ($car) {
+            return $car->refurbishments->sum('amount');
+        });
+        $totalCost = $stockCars->sum(function ($car) {
+            return $car->total_cost;
+        });
+        $totalSelling = $stockCars->sum('selling_price');
+
+        return view('reports.stock-summary', compact(
+            'stockCars',
+            'branches',
+            'groupedByBranch',
+            'totalCars',
+            'totalPurchase',
+            'totalRefurb',
+            'totalCost',
+            'totalSelling'
+        ));
+    }
+
     public function trash()
     {
         $deletedCars = Car::onlyTrashed()->with('refurbishments')->orderBy('deleted_at', 'desc')->get();

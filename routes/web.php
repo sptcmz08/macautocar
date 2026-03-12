@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profit-details', [DashboardController::class, 'profitDetails'])->name('profit.details');
     Route::get('/trash', [DashboardController::class, 'trash'])->name('trash');
     Route::get('/reports', [DashboardController::class, 'reports'])->name('reports');
+    Route::get('/stock-summary', [DashboardController::class, 'stockSummary'])->name('stock.summary');
     Route::get('/personal-account', [DashboardController::class, 'personalAccount'])->name('personal.account');
 
     // Restore routes

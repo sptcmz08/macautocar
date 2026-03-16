@@ -1346,7 +1346,7 @@
                                             <div class="relative cursor-pointer"
                                                 onclick="event.stopPropagation(); openGallery({{ $car->images->pluck('path')->map(fn($p) => '/img/' . $p)->toJson() }})">
                                                 <img src="{{ '/img/' . $firstImage->path }}" alt="Car Image"
-                                                    class="w-16 h-16 object-cover rounded-xl shadow-sm hover:scale-110 transition-transform">
+                                                    class="w-16 h-16 object-contain bg-gray-50 rounded-xl shadow-sm hover:scale-110 transition-transform">
                                                 @if($car->images->count() > 1)
                                                     <span
                                                         class="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $car->images->count() }}</span>

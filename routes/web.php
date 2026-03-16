@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/daily-log', [DashboardController::class, 'dailyLog'])->name('daily-log');
     Route::post('/settings', [DashboardController::class, 'updateSetting'])->name('settings.update');
     Route::get('/profit-details', [DashboardController::class, 'profitDetails'])->name('profit.details');
     Route::get('/trash', [DashboardController::class, 'trash'])->name('trash');

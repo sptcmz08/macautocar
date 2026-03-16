@@ -89,8 +89,11 @@ class DashboardController extends Controller
             $necessaryExpenses = NecessaryExpense::orderBy('date', 'desc')->get();
             $necessaryExpensesTotal = $necessaryExpenses->sum('amount');
 
-            // เงินสดในมือ = ทุนตั้งต้น + กำไรสะสม - สต็อกรถ - อะไหล่ - ทุนอื่นๆ (Active) - ค่าใช้จ่ายที่จำเป็น
-            $cashOnHand = $setting->initial_capital + $accumulatedProfit - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal - $necessaryExpensesTotal;
+            // เงินสดในมือ = ทุนตั้งต้น - สต็อกรถ - อะไหล่ - ทุนอื่นๆ (Active) - ค่าใช้จ่ายที่จำเป็น
+            $cashOnHand = $setting->initial_capital - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal - $necessaryExpensesTotal;
+
+            // ยอดคงเหลือทั้งหมด = ทุนคงเหลือ + กำไรสะสม
+            $totalRemaining = $cashOnHand + $accumulatedProfit;
 
             // คำนวณค่าปรับสภาพรวม (สำหรับรถในสต็อก)
             $totalRefurbishmentCost = $stockCars->sum(function ($car) {
@@ -111,6 +114,7 @@ class DashboardController extends Controller
                 'stockCarsValue',
                 'partsValue',
                 'cashOnHand',
+                'totalRemaining',
                 'accumulatedProfit',
                 'totalAssets',
                 'carsInStock',
@@ -379,7 +383,7 @@ class DashboardController extends Controller
         $carProfit = $totalSoldRevenue - $totalSoldCost;
         $accumulatedProfit = $carProfit + $capitalExpensesProfit;
 
-        $cashOnHand = $setting->initial_capital + $accumulatedProfit - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal;
+        $cashOnHand = $setting->initial_capital - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal;
 
         // Necessary Expenses
         $necessaryExpensesTotal = NecessaryExpense::sum('amount');
@@ -450,7 +454,7 @@ class DashboardController extends Controller
         $carProfit = $totalSoldRevenue - $totalSoldCost;
         $accumulatedProfit = $carProfit + $capitalExpensesProfit;
 
-        $cashOnHand = $setting->initial_capital + $accumulatedProfit - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal;
+        $cashOnHand = $setting->initial_capital - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal;
 
         // Necessary Expenses
         $necessaryExpenses = NecessaryExpense::all();
@@ -520,5 +524,32 @@ class DashboardController extends Controller
         $archive = \App\Models\YearlyArchive::where('year', $year)->firstOrFail();
 
         return view('reports.archive', compact('archive'));
+    }
+
+    /**
+     * Daily Activity Log - แสดงรายการที่ลงในแต่ละวัน
+     */
+    public function dailyLog(Request $request)
+    {
+        $date = $request->get('date', now()->format('Y-m-d'));
+
+        // Fetch all records created on this date
+        $cars = Car::whereDate('created_at', $date)->orderBy('created_at', 'desc')->get();
+        $parts = Part::whereDate('created_at', $date)->orderBy('created_at', 'desc')->get();
+        $capitalExpenses = \App\Models\CapitalExpense::whereDate('created_at', $date)
+            ->whereNull('parent_id')
+            ->orderBy('created_at', 'desc')->get();
+        $capitalChildren = \App\Models\CapitalExpense::whereDate('created_at', $date)
+            ->whereNotNull('parent_id')
+            ->orderBy('created_at', 'desc')->get();
+        $necessaryExpenses = NecessaryExpense::whereDate('date', $date)->orderBy('date', 'desc')->get();
+
+        $totalEntries = $cars->count() + $parts->count() + $capitalExpenses->count()
+            + $capitalChildren->count() + $necessaryExpenses->count();
+
+        return view('daily-log', compact(
+            'date', 'cars', 'parts', 'capitalExpenses', 'capitalChildren',
+            'necessaryExpenses', 'totalEntries'
+        ));
     }
 }

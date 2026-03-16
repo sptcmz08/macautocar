@@ -801,7 +801,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div
                     class="glass rounded-2xl p-4 text-center hover:scale-105 transition-all duration-300 border border-emerald-200/30">
-                    <p class="text-xs text-gray-600 mb-1 font-medium">💵 ยอดเงินคงเหลือ</p>
+                    <p class="text-xs text-gray-600 mb-1 font-medium">💵 ทุนคงเหลือ</p>
                     <p class="text-lg md:text-xl font-bold text-emerald-600 counter">
                         ฿{{ number_format($cashOnHand, 0) }}</p>
                 </div>
@@ -895,10 +895,10 @@
 
                 <!-- Deduction Breakdown -->
                 <div class="bg-gradient-to-r from-slate-700/80 to-slate-800/80 rounded-xl p-3 text-white/90 text-sm">
-                    <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center">
                         <div class="bg-white/10 rounded-lg p-2">
-                            <p class="text-xs text-white/60">สินทรัพย์รวม</p>
-                            <p class="font-bold text-white">฿{{ number_format($totalAssets, 0) }}</p>
+                            <p class="text-xs text-white/60">ทุนตั้งต้น</p>
+                            <p class="font-bold text-white">฿{{ number_format($setting->initial_capital, 0) }}</p>
                         </div>
                         <div class="bg-red-500/20 rounded-lg p-2">
                             <p class="text-xs text-red-200">(-) สต็อกรถ</p>
@@ -912,13 +912,25 @@
                             <p class="text-xs text-red-200">(-) ทุนอื่นๆ</p>
                             <p class="font-bold text-red-300">฿{{ number_format($capitalExpensesActiveTotal, 0) }}</p>
                         </div>
+                        @if($necessaryExpensesTotal > 0)
                         <div class="bg-red-500/20 rounded-lg p-2">
                             <p class="text-xs text-red-200">(-) ค่าใช้จ่าย</p>
                             <p class="font-bold text-red-300">฿{{ number_format($necessaryExpensesTotal, 0) }}</p>
                         </div>
+                        @endif
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-center mt-2">
                         <div class="bg-emerald-500/20 rounded-lg p-2">
-                            <p class="text-xs text-emerald-200">(=) เงินคงเหลือ</p>
+                            <p class="text-xs text-emerald-200">(=) ทุนคงเหลือ</p>
                             <p class="font-bold text-emerald-300">฿{{ number_format($cashOnHand, 0) }}</p>
+                        </div>
+                        <div class="bg-amber-500/20 rounded-lg p-2">
+                            <p class="text-xs text-amber-200">(+) กำไรสะสม</p>
+                            <p class="font-bold text-amber-300">฿{{ number_format($accumulatedProfit, 0) }}</p>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-2 border border-white/30">
+                            <p class="text-xs text-white/80">ยอดคงเหลือทั้งหมด</p>
+                            <p class="font-bold text-white text-lg">฿{{ number_format($totalRemaining, 0) }}</p>
                         </div>
                     </div>
                 </div>

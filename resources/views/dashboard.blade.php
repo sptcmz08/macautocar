@@ -798,7 +798,7 @@
             </div>
 
             <!-- Stats Grid - Premium Glassmorphism -->
-            <div class="grid grid-cols-2 md:grid-cols-7 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div
                     class="glass rounded-2xl p-4 text-center hover:scale-105 transition-all duration-300 border border-emerald-200/30">
                     <p class="text-xs text-gray-600 mb-1 font-medium">💵 ยอดเงินคงเหลือ</p>

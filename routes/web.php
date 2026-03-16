@@ -8,7 +8,9 @@ use App\Http\Controllers\RefurbishmentController;
 use App\Http\Controllers\CarImageController;
 use App\Http\Controllers\PartController;
 use App\Http\Controllers\CapitalExpenseController;
+use App\Http\Controllers\CapitalPaymentController;
 use App\Http\Controllers\PersonalTransactionController;
+use App\Http\Controllers\NecessaryExpenseController;
 use App\Http\Controllers\BranchController;
 
 // ============================================
@@ -63,9 +65,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/capital-expenses/{id}/sold', [CapitalExpenseController::class, 'markAsSold'])->name('capital-expenses.markAsSold');
     Route::post('/capital-expenses/{id}/revert-sold', [CapitalExpenseController::class, 'revertSold'])->name('capital-expenses.revertSold');
 
+    // Capital Payment routes
+    Route::post('/capital-expenses/{id}/payments', [CapitalPaymentController::class, 'store'])->name('capital-payments.store');
+    Route::delete('/capital-payments/{id}', [CapitalPaymentController::class, 'destroy'])->name('capital-payments.destroy');
+
     // Personal Transaction routes
     Route::post('/personal-transactions', [PersonalTransactionController::class, 'store'])->name('personal-transactions.store');
     Route::delete('/personal-transactions/{personalTransaction}', [PersonalTransactionController::class, 'destroy'])->name('personal-transactions.destroy');
+
+    // Necessary Expense routes
+    Route::post('/necessary-expenses', [NecessaryExpenseController::class, 'store'])->name('necessary-expenses.store');
+    Route::put('/necessary-expenses/{id}', [NecessaryExpenseController::class, 'update'])->name('necessary-expenses.update');
+    Route::delete('/necessary-expenses/{id}', [NecessaryExpenseController::class, 'destroy'])->name('necessary-expenses.destroy');
 
     // Year-End Reset Routes
     Route::get('/year-end-reset', [DashboardController::class, 'showYearEndReset'])->name('year-end.show');
@@ -82,7 +93,13 @@ Route::middleware('auth')->group(function () {
 
     // Serve storage files directly (bypass symlink for shared hosting)
     Route::get('/img/{path}', function ($path) {
-        $fullPath = storage_path('app/public/' . $path);
+        $basePath = realpath(storage_path('app/public'));
+        $fullPath = realpath(storage_path('app/public/' . $path));
+
+        // Prevent path traversal — resolved path must stay within storage/app/public/
+        if (!$fullPath || !str_starts_with($fullPath, $basePath)) {
+            abort(404);
+        }
 
         if (!file_exists($fullPath)) {
             abort(404);
@@ -96,8 +113,12 @@ Route::middleware('auth')->group(function () {
         ]);
     })->where('path', '.*')->name('storage.serve');
 
-    // Setup route (requires login)
+    // Setup route (requires login + local environment only)
     Route::get('/setup-macauto-2026', function () {
+        if (!app()->environment('local')) {
+            abort(403, 'Setup route is only available in local environment.');
+        }
+
         try {
             $output = '<h2>🔧 Setup Helper</h2>';
             \Illuminate\Support\Facades\Artisan::call('config:clear');

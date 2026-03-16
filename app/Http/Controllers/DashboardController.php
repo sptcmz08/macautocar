@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Car;
 use App\Models\Setting;
 use App\Models\Part;
+use App\Models\NecessaryExpense;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -84,8 +85,12 @@ class DashboardController extends Controller
             $carProfit = $totalSoldRevenue - $totalSoldCost;
             $accumulatedProfit = $carProfit + $capitalExpensesProfit;
 
-            // เงินสดในมือ = ทุนตั้งต้น + กำไรสะสม - สต็อกรถ - อะไหล่ - ทุนอื่นๆ (Active)
-            $cashOnHand = $setting->initial_capital + $accumulatedProfit - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal;
+            // Fetch Necessary Expenses (operational costs)
+            $necessaryExpenses = NecessaryExpense::orderBy('date', 'desc')->get();
+            $necessaryExpensesTotal = $necessaryExpenses->sum('amount');
+
+            // เงินสดในมือ = ทุนตั้งต้น + กำไรสะสม - สต็อกรถ - อะไหล่ - ทุนอื่นๆ (Active) - ค่าใช้จ่ายที่จำเป็น
+            $cashOnHand = $setting->initial_capital + $accumulatedProfit - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal - $necessaryExpensesTotal;
 
             // คำนวณค่าปรับสภาพรวม (สำหรับรถในสต็อก)
             $totalRefurbishmentCost = $stockCars->sum(function ($car) {
@@ -124,7 +129,9 @@ class DashboardController extends Controller
                 'targetProfit',
                 'progressPercent',
                 'totalRefurbishmentCost',
-                'branches'
+                'branches',
+                'necessaryExpenses',
+                'necessaryExpensesTotal'
             ));
         } catch (\Exception $e) {
             return redirect()->route('login')->with('error', 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
@@ -190,10 +197,8 @@ class DashboardController extends Controller
         // Sold Capital Expenses
         $capitalExpenses = \App\Models\CapitalExpense::orderBy('date', 'desc')->get();
         $soldCapitalExpenses = $capitalExpenses->where('status', 'sold')->where('transaction_type', 'increase');
-        $capitalExpensesProfit = $soldCapitalExpenses->sum(function ($expense) use ($capitalExpenses) {
-            $decreasesSum = $capitalExpenses->where('parent_id', $expense->id)->sum('amount');
-            $remainingCost = $expense->amount - $decreasesSum;
-            return ($expense->sold_price ?? 0) - $remainingCost;
+        $capitalExpensesProfit = $soldCapitalExpenses->sum(function ($expense) {
+            return ($expense->sold_price ?? 0) - $expense->remaining_amount;
         });
 
         // Combined total profit
@@ -376,6 +381,10 @@ class DashboardController extends Controller
 
         $cashOnHand = $setting->initial_capital + $accumulatedProfit - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal;
 
+        // Necessary Expenses
+        $necessaryExpensesTotal = NecessaryExpense::sum('amount');
+        $cashOnHand -= $necessaryExpensesTotal;
+
         $personalTransactions = \App\Models\PersonalTransaction::all();
         $personalBalance = $personalTransactions->where('type', 'income')->sum('amount')
             - $personalTransactions->where('type', 'expense')->sum('amount');
@@ -396,6 +405,7 @@ class DashboardController extends Controller
             'accumulatedProfit',
             'cashOnHand',
             'personalBalance',
+            'necessaryExpensesTotal',
             'archives'
         ));
     }
@@ -442,6 +452,11 @@ class DashboardController extends Controller
 
         $cashOnHand = $setting->initial_capital + $accumulatedProfit - $stockCarsValue - $partsValue - $capitalExpensesActiveTotal;
 
+        // Necessary Expenses
+        $necessaryExpenses = NecessaryExpense::all();
+        $necessaryExpensesTotal = $necessaryExpenses->sum('amount');
+        $cashOnHand -= $necessaryExpensesTotal;
+
         // Prepare sold cars data for archive
         $soldCarsData = $soldCars->map(function ($car) {
             return [
@@ -463,6 +478,7 @@ class DashboardController extends Controller
         $transactionsData = [
             'personal' => $personalTransactions->toArray(),
             'capital_expenses' => $capitalExpenses->toArray(),
+            'necessary_expenses' => $necessaryExpenses->toArray(),
         ];
 
         // Create archive record
@@ -483,6 +499,9 @@ class DashboardController extends Controller
 
         // Soft delete sold cars (move to archive)
         Car::where('status', 'sold')->delete();
+
+        // Clear necessary expenses for the new year
+        NecessaryExpense::query()->delete();
 
         // Update settings for new year
         $setting->update([

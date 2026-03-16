@@ -16,7 +16,7 @@ class PersonalTransactionController extends Controller
             'type' => 'required|in:income,expense',
         ]);
 
-        PersonalTransaction::create($request->all());
+        PersonalTransaction::create($request->validated());
 
         return redirect()->back()->with('success', 'บันทึกรายการเรียบร้อยแล้ว');
     }

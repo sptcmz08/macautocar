@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CapitalExpense extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'amount',
@@ -41,6 +44,14 @@ class CapitalExpense extends Model
     }
 
     /**
+     * Get payments for this capital expense
+     */
+    public function payments()
+    {
+        return $this->hasMany(\App\Models\CapitalPayment::class);
+    }
+
+    /**
      * Get remaining amount (original - sum of decreases)
      */
     public function getRemainingAmountAttribute()
@@ -54,4 +65,5 @@ class CapitalExpense extends Model
         return $this->amount - $totalDecreases;
     }
 }
+
 

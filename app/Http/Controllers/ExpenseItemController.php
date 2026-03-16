@@ -15,7 +15,7 @@ class ExpenseItemController extends Controller
             'amount' => 'required|numeric|min:0',
         ]);
 
-        ExpenseItem::create($request->all());
+        ExpenseItem::create($request->validated());
 
         return redirect()->back()->with('success', 'Expense Item added successfully.');
     }

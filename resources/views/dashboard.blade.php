@@ -830,6 +830,13 @@
                         ฿{{ number_format($capitalExpensesActiveTotal, 0) }}
                     </p>
                 </div>
+                <div
+                    class="glass rounded-2xl p-4 text-center hover:scale-105 transition-all duration-300 border border-red-200/30">
+                    <p class="text-xs text-gray-600 mb-1 font-medium">🧾 ค่าใช้จ่าย</p>
+                    <p class="text-lg md:text-xl font-bold text-red-600 counter">
+                        ฿{{ number_format($necessaryExpensesTotal, 0) }}
+                    </p>
+                </div>
                 <a href="{{ route('personal.account') }}"
                     class="glass rounded-2xl p-4 text-center hover:scale-105 transition-all duration-300 border border-purple-200/30 cursor-pointer hover:bg-white/95 block">
                     <p class="text-xs text-gray-600 mb-1 font-medium">💳 ส่วนตัวคงเหลือ</p>
@@ -888,7 +895,7 @@
 
                 <!-- Deduction Breakdown -->
                 <div class="bg-gradient-to-r from-slate-700/80 to-slate-800/80 rounded-xl p-3 text-white/90 text-sm">
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center">
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center">
                         <div class="bg-white/10 rounded-lg p-2">
                             <p class="text-xs text-white/60">สินทรัพย์รวม</p>
                             <p class="font-bold text-white">฿{{ number_format($totalAssets, 0) }}</p>
@@ -904,6 +911,10 @@
                         <div class="bg-red-500/20 rounded-lg p-2">
                             <p class="text-xs text-red-200">(-) ทุนอื่นๆ</p>
                             <p class="font-bold text-red-300">฿{{ number_format($capitalExpensesActiveTotal, 0) }}</p>
+                        </div>
+                        <div class="bg-red-500/20 rounded-lg p-2">
+                            <p class="text-xs text-red-200">(-) ค่าใช้จ่าย</p>
+                            <p class="font-bold text-red-300">฿{{ number_format($necessaryExpensesTotal, 0) }}</p>
                         </div>
                         <div class="bg-emerald-500/20 rounded-lg p-2">
                             <p class="text-xs text-emerald-200">(=) เงินคงเหลือ</p>
@@ -1190,6 +1201,10 @@
                     class="hidden bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-1 transition-colors">
                     <span>+</span> เพิ่มรายการ
                 </button>
+                <button id="btnAddNecessary" onclick="document.getElementById('addNecessaryExpenseModal').classList.remove('hidden')"
+                    class="hidden bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-1 transition-colors">
+                    <span>+</span> ค่าใช้จ่าย
+                </button>
             </div>
         </div>
 
@@ -1211,10 +1226,11 @@
                 class="tab-item px-2.5 py-1.5 text-xs font-bold rounded-lg bg-orange-100 text-orange-800 border border-orange-400 whitespace-nowrap flex items-center gap-1 transition-all">
                 💰 ทุนอื่นๆ
             </button>
+            <button onclick="switchTab('necessary', 'all')" id="tabNecessary"
+                class="tab-item px-2.5 py-1.5 text-xs font-bold rounded-lg bg-red-100 text-red-800 border border-red-400 whitespace-nowrap flex items-center gap-1 transition-all">
+                🧾 ค่าใช้จ่าย
+            </button>
 
-            <!-- Link to Profit Page (Visible when Sold tab is active, handled by JS or just always visible as an option?) -->
-            <!-- Let's put it next to the tabs or inside the content area. Putting it here might be crowded. -->
-            <!-- User said "Click in -> Do accounting". Let's add a button that appears or is highlighted. -->
             <a href="{{ route('profit.details') }}" id="btnAccountCheck"
                 class="hidden ml-auto px-4 py-2 text-sm font-bold text-white bg-purple-600 rounded-lg hover:bg-purple-700 shadow flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -1894,6 +1910,144 @@
                     </table>
                 </div>
             @endif
+        </div>
+
+        <!-- Necessary Expenses Section (Hidden by default) -->
+        <div id="necessarySection" class="hidden">
+            <div class="glass-card overflow-x-auto table-responsive">
+                <table class="min-w-full divide-y divide-gray-200" id="necessaryTable">
+                    <thead class="bg-gradient-to-r from-red-50 to-rose-50">
+                        <tr>
+                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider w-16">ลำดับ</th>
+                            <th class="px-4 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">วันที่</th>
+                            <th class="px-4 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">รายการ</th>
+                            <th class="px-4 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">จำนวนเงิน</th>
+                            <th class="px-4 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider hide-mobile">หมายเหตุ</th>
+                            <th class="px-4 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($necessaryExpenses as $index => $nExp)
+                            <tr class="hover:bg-red-50/30 transition">
+                                <td class="px-4 py-4 whitespace-nowrap text-center text-gray-500 text-sm row-number-cell">{{ $index + 1 }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {{ \Carbon\Carbon::parse($nExp->date)->addYears(543)->format('d/m/Y') }}
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="text-sm font-bold text-gray-800">{{ $nExp->name }}</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-right">
+                                    <span class="text-sm font-bold text-red-600">฿{{ number_format($nExp->amount, 0) }}</span>
+                                </td>
+                                <td class="px-4 py-4 text-sm text-gray-500 hide-mobile">{{ Str::limit($nExp->description, 40) ?: '-' }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button onclick="editNecessaryExpense({{ json_encode($nExp) }})"
+                                            class="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="แก้ไข">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </button>
+                                        <form action="{{ route('necessary-expenses.destroy', $nExp->id) }}" method="POST" onsubmit="return confirm('ยืนยันลบรายการนี้?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition" title="ลบ">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-10 text-center text-gray-400">
+                                    ยังไม่มีรายการค่าใช้จ่าย
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    @if($necessaryExpenses->count() > 0)
+                    <tfoot class="bg-red-50 font-bold">
+                        <tr>
+                            <td colspan="3" class="px-4 py-3 text-right text-gray-600">รวมค่าใช้จ่ายทั้งหมด</td>
+                            <td class="px-4 py-3 text-right text-red-600">฿{{ number_format($necessaryExpensesTotal, 0) }}</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                    @endif
+                </table>
+            </div>
+        </div>
+
+        <!-- Add Necessary Expense Modal -->
+        <div id="addNecessaryExpenseModal" class="hidden fixed inset-0 modal-premium z-50 flex items-center justify-center p-4">
+            <div class="modal-content-premium p-6 w-full max-w-md modal-content">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">🧾 เพิ่มค่าใช้จ่าย</h3>
+                    <button onclick="document.getElementById('addNecessaryExpenseModal').classList.add('hidden')" class="p-1 rounded-full hover:bg-gray-100">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form action="{{ route('necessary-expenses.store') }}" method="POST">
+                    @csrf
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">รายการ *</label>
+                            <input type="text" name="name" required class="input-premium w-full" placeholder="เช่น ค่าเช่าลาน, ค่าน้ำมัน">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">จำนวนเงิน (฿) *</label>
+                            <input type="number" name="amount" required min="0" step="0.01" class="input-premium w-full" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">วันที่ *</label>
+                            <input type="date" name="date" required class="input-premium w-full" value="{{ date('Y-m-d') }}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label>
+                            <textarea name="description" class="input-premium w-full" rows="2" placeholder="รายละเอียดเพิ่มเติม (ไม่บังคับ)"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" onclick="document.getElementById('addNecessaryExpenseModal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition">ยกเลิก</button>
+                        <button type="submit" class="flex-1 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 transition shadow-lg">บันทึก</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Necessary Expense Modal -->
+        <div id="editNecessaryExpenseModal" class="hidden fixed inset-0 modal-premium z-50 flex items-center justify-center p-4">
+            <div class="modal-content-premium p-6 w-full max-w-md modal-content">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">✏️ แก้ไขค่าใช้จ่าย</h3>
+                    <button onclick="document.getElementById('editNecessaryExpenseModal').classList.add('hidden')" class="p-1 rounded-full hover:bg-gray-100">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form id="editNecessaryForm" method="POST">
+                    @csrf @method('PUT')
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">รายการ *</label>
+                            <input type="text" name="name" id="editNecName" required class="input-premium w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">จำนวนเงิน (฿) *</label>
+                            <input type="number" name="amount" id="editNecAmount" required min="0" step="0.01" class="input-premium w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">วันที่ *</label>
+                            <input type="date" name="date" id="editNecDate" required class="input-premium w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label>
+                            <textarea name="description" id="editNecDescription" class="input-premium w-full" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" onclick="document.getElementById('editNecessaryExpenseModal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition">ยกเลิก</button>
+                        <button type="submit" class="flex-1 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition shadow-lg">บันทึก</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <!-- Personal Transactions Section (Hidden by default) -->
@@ -4216,23 +4370,27 @@
                 'tabPersonal': { 
                     active: 'bg-purple-600 text-white shadow-lg ring-2 ring-purple-600 ring-offset-2 font-bold',
                     inactive: 'bg-purple-100 text-purple-800 border-2 border-purple-400 shadow-sm font-bold hover:bg-purple-200'
+                },
+                'tabNecessary': { 
+                    active: 'bg-red-600 text-white shadow-lg ring-2 ring-red-600 ring-offset-2 font-bold',
+                    inactive: 'bg-red-100 text-red-800 border-2 border-red-400 shadow-sm font-bold hover:bg-red-200'
                 }
             };
             
             // All possible classes to remove (comprehensive list)
             const removeClasses = [
                 // Backgrounds
-                'bg-blue-600', 'bg-green-600', 'bg-cyan-600', 'bg-orange-600', 'bg-purple-600',
-                'bg-blue-100', 'bg-green-100', 'bg-cyan-100', 'bg-orange-100', 'bg-purple-100', 'bg-white',
+                'bg-blue-600', 'bg-green-600', 'bg-cyan-600', 'bg-orange-600', 'bg-purple-600', 'bg-red-600',
+                'bg-blue-100', 'bg-green-100', 'bg-cyan-100', 'bg-orange-100', 'bg-purple-100', 'bg-red-100', 'bg-white',
                 // Text colors
-                'text-white', 'text-blue-700', 'text-green-700', 'text-cyan-700', 'text-orange-700', 'text-purple-700',
-                'text-blue-800', 'text-green-800', 'text-cyan-800', 'text-orange-800', 'text-purple-800',
+                'text-white', 'text-blue-700', 'text-green-700', 'text-cyan-700', 'text-orange-700', 'text-purple-700', 'text-red-700',
+                'text-blue-800', 'text-green-800', 'text-cyan-800', 'text-orange-800', 'text-purple-800', 'text-red-800',
                 // Shadows
                 'shadow-lg', 'shadow-sm', 'shadow-md',
                 // Ring
-                'ring-2', 'ring-blue-600', 'ring-green-600', 'ring-cyan-600', 'ring-orange-600', 'ring-purple-600', 'ring-offset-2',
+                'ring-2', 'ring-blue-600', 'ring-green-600', 'ring-cyan-600', 'ring-orange-600', 'ring-purple-600', 'ring-red-600', 'ring-offset-2',
                 // Borders
-                'border-2', 'border-blue-400', 'border-green-400', 'border-cyan-400', 'border-orange-400', 'border-purple-400',
+                'border-2', 'border-blue-400', 'border-green-400', 'border-cyan-400', 'border-orange-400', 'border-purple-400', 'border-red-400',
                 // Font
                 'font-bold', 'font-semibold'
             ];
@@ -4247,6 +4405,8 @@
                 activeBtnId = 'tabParts';
             } else if (type === 'expense') {
                 activeBtnId = 'tabExpenses';
+            } else if (type === 'necessary') {
+                activeBtnId = 'tabNecessary';
             }
 
             // Apply styles
@@ -4266,16 +4426,19 @@
             const partSection = document.getElementById('partSection');
             const expenseSection = document.getElementById('expenseSection');
             const personalSection = document.getElementById('personalSection');
+            const necessarySection = document.getElementById('necessarySection');
             
             carSection.classList.add('hidden');
             partSection.classList.add('hidden');
             if(expenseSection) expenseSection.classList.add('hidden');
             if(personalSection) personalSection.classList.add('hidden');
+            if(necessarySection) necessarySection.classList.add('hidden');
 
             // Hide/Show Add Buttons
             const btnAddCar = document.getElementById('btnAddCar');
             const btnAddPart = document.getElementById('btnAddPart');
             const btnAddExpense = document.getElementById('btnAddExpense');
+            const btnAddNecessary = document.getElementById('btnAddNecessary');
             
             btnAddCar.classList.add('hidden');
             btnAddPart.classList.add('hidden');
@@ -4283,6 +4446,7 @@
             const btnAddPersonal = document.getElementById('btnAddPersonal');
             if(btnAddPersonal) btnAddPersonal.classList.add('hidden');
             if(btnAddExpense) btnAddExpense.classList.add('hidden');
+            if(btnAddNecessary) btnAddNecessary.classList.add('hidden');
 
             if (type === 'part') {
                 partSection.classList.remove('hidden');
@@ -4290,6 +4454,9 @@
             } else if (type === 'expense') {
                 if(expenseSection) expenseSection.classList.remove('hidden');
                 if(btnAddExpense) btnAddExpense.classList.remove('hidden');
+            } else if (type === 'necessary') {
+                if(necessarySection) necessarySection.classList.remove('hidden');
+                if(btnAddNecessary) btnAddNecessary.classList.remove('hidden');
             } else if (type === 'personal') {
                 if(personalSection) personalSection.classList.remove('hidden');
                 if(btnAddPersonal) btnAddPersonal.classList.remove('hidden');
@@ -4333,7 +4500,7 @@
 
         // Renumber visible rows sequentially (1, 2, 3...) after filtering
         function renumberVisibleRows() {
-            document.querySelectorAll('#carTable, #partTable, #expenseTable').forEach(function(table) {
+            document.querySelectorAll('#carTable, #partTable, #expenseTable, #necessaryTable').forEach(function(table) {
                 if (!table) return;
                 var counter = 0;
                 table.querySelectorAll('tbody tr').forEach(function(row) {
@@ -4552,6 +4719,16 @@
             });
         }
         
+        function editNecessaryExpense(expense) {
+            document.getElementById('editNecessaryForm').action = '/necessary-expenses/' + expense.id;
+            document.getElementById('editNecName').value = expense.name;
+            document.getElementById('editNecAmount').value = expense.amount;
+            let date = new Date(expense.date);
+            document.getElementById('editNecDate').value = date.toISOString().split('T')[0];
+            document.getElementById('editNecDescription').value = expense.description || '';
+            document.getElementById('editNecessaryExpenseModal').classList.remove('hidden');
+        }
+
         function openPersonalModal(type) {
             document.getElementById('personalTransactionType').value = type;
             const title = type === 'income' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย';

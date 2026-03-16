@@ -52,7 +52,8 @@ class CapitalExpense extends Model
     }
 
     /**
-     * Get remaining amount (original - sum of decreases)
+     * Get remaining amount
+     * For parent records: original + sum(child increases) - sum(child decreases)
      */
     public function getRemainingAmountAttribute()
     {
@@ -60,9 +61,12 @@ class CapitalExpense extends Model
             return $this->amount; // Decrease records don't have remaining
         }
 
-        // For increase records: original amount - sum of decrease children
-        $totalDecreases = $this->decreases()->sum('amount');
-        return $this->amount - $totalDecreases;
+        // For parent (increase) records:
+        // + child increases (เพิ่มทุน)
+        // - child decreases (ลดทุน/รับคืน)
+        $childIncreases = $this->decreases()->where('transaction_type', 'increase')->sum('amount');
+        $childDecreases = $this->decreases()->where('transaction_type', 'decrease')->sum('amount');
+        return $this->amount + $childIncreases - $childDecreases;
     }
 }
 

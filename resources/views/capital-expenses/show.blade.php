@@ -49,9 +49,12 @@
 
     @php
         $isSold = ($expense->status ?? 'active') === 'sold';
-        $decreases = $expense->decreases;
-        $decreasesSum = $decreases->sum('amount');
-        $remaining = $expense->amount - $decreasesSum;
+        $allChildren = $expense->decreases;
+        $childIncreases = $allChildren->where('transaction_type', 'increase');
+        $childDecreases = $allChildren->where('transaction_type', 'decrease');
+        $childIncreasesSum = $childIncreases->sum('amount');
+        $childDecreasesSum = $childDecreases->sum('amount');
+        $remaining = $expense->amount + $childIncreasesSum - $childDecreasesSum;
         $soldPrice = $expense->sold_price ?? 0;
         $profit = $isSold ? ($soldPrice - $remaining) : 0;
     @endphp
@@ -106,41 +109,57 @@
             </div>
         </div>
 
-        <!-- Section 2: รายการรับคืน -->
+        <!-- Section 2: รายการเพิ่ม/ลดทุน -->
         <div class="bg-white rounded-xl border border-gray-200 p-5 mb-5 section-card">
-            <h2 class="text-lg font-bold text-gray-800 mb-3">2. รายการรับคืน (ลดทุน)</h2>
+            <h2 class="text-lg font-bold text-gray-800 mb-3">2. รายการเพิ่ม/ลดทุน</h2>
 
-            @if($decreases->count() > 0)
+            @if($allChildren->count() > 0)
                 <table class="w-full">
                     <thead>
                         <tr class="border-b-2 border-gray-200">
                             <th class="text-left text-sm font-semibold text-gray-600 py-2 w-10">ลำดับ</th>
                             <th class="text-left text-sm font-semibold text-gray-600 py-2">วันที่</th>
                             <th class="text-left text-sm font-semibold text-gray-600 py-2">รายการ</th>
+                            <th class="text-left text-sm font-semibold text-gray-600 py-2">ประเภท</th>
                             <th class="text-right text-sm font-semibold text-gray-600 py-2">จำนวนเงิน</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($decreases as $index => $decrease)
+                        @foreach($allChildren->sortBy('date') as $index => $child)
                             <tr class="border-b border-gray-50">
                                 <td class="text-sm text-gray-500 py-2.5">{{ $index + 1 }}</td>
-                                <td class="text-sm text-gray-500 py-2.5">{{ \Carbon\Carbon::parse($decrease->date)->addYears(543)->format('d/m/Y') }}</td>
-                                <td class="text-sm text-gray-700 py-2.5">{{ $decrease->name }}</td>
-                                <td class="text-sm text-emerald-600 font-bold py-2.5 text-right">฿{{ number_format($decrease->amount, 0) }}</td>
+                                <td class="text-sm text-gray-500 py-2.5">{{ \Carbon\Carbon::parse($child->date)->addYears(543)->format('d/m/Y') }}</td>
+                                <td class="text-sm text-gray-700 py-2.5">{{ $child->name }}</td>
+                                <td class="text-sm py-2.5">
+                                    @if($child->transaction_type === 'increase')
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">เพิ่มทุน</span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">ลดทุน/รับคืน</span>
+                                    @endif
+                                </td>
+                                <td class="text-sm font-bold py-2.5 text-right {{ $child->transaction_type === 'increase' ? 'text-blue-600' : 'text-emerald-600' }}">
+                                    {{ $child->transaction_type === 'increase' ? '+' : '-' }}฿{{ number_format($child->amount, 0) }}
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot>
-                        <tr class="border-t-2 border-gray-200">
-                            <td colspan="3" class="text-sm font-bold text-gray-800 py-3">รวมรับคืน</td>
-                            <td class="text-sm font-bold text-emerald-600 py-3 text-right">
-                                ฿{{ number_format($decreasesSum, 0) }}
-                            </td>
+                        @if($childIncreasesSum > 0)
+                        <tr class="border-t border-gray-200">
+                            <td colspan="4" class="text-sm font-bold text-blue-800 py-2">รวมเพิ่มทุน</td>
+                            <td class="text-sm font-bold text-blue-600 py-2 text-right">+฿{{ number_format($childIncreasesSum, 0) }}</td>
                         </tr>
+                        @endif
+                        @if($childDecreasesSum > 0)
+                        <tr class="border-t border-gray-200">
+                            <td colspan="4" class="text-sm font-bold text-emerald-800 py-2">รวมลดทุน/รับคืน</td>
+                            <td class="text-sm font-bold text-emerald-600 py-2 text-right">-฿{{ number_format($childDecreasesSum, 0) }}</td>
+                        </tr>
+                        @endif
                     </tfoot>
                 </table>
             @else
-                <p class="text-sm text-gray-400 py-3 border-t border-gray-100">— ยังไม่มีรายการรับคืน —</p>
+                <p class="text-sm text-gray-400 py-3 border-t border-gray-100">— ยังไม่มีรายการเพิ่ม/ลดทุน —</p>
             @endif
         </div>
 
@@ -152,10 +171,18 @@
                     <span class="text-sm text-gray-600">• ทุนตั้งต้น</span>
                     <span class="text-sm text-gray-800">฿{{ number_format($expense->amount, 0) }}</span>
                 </div>
+                @if($childIncreasesSum > 0)
                 <div class="flex justify-between items-center py-1.5">
-                    <span class="text-sm text-gray-600">• หัก: รับคืนแล้ว</span>
-                    <span class="text-sm text-emerald-600">- ฿{{ number_format($decreasesSum, 0) }}</span>
+                    <span class="text-sm text-gray-600">• บวก: เพิ่มทุน</span>
+                    <span class="text-sm text-blue-600">+ ฿{{ number_format($childIncreasesSum, 0) }}</span>
                 </div>
+                @endif
+                @if($childDecreasesSum > 0)
+                <div class="flex justify-between items-center py-1.5">
+                    <span class="text-sm text-gray-600">• หัก: ลดทุน/รับคืน</span>
+                    <span class="text-sm text-emerald-600">- ฿{{ number_format($childDecreasesSum, 0) }}</span>
+                </div>
+                @endif
                 <div class="flex justify-between items-center py-3 bg-slate-50 rounded-lg px-3 -mx-1 mt-2">
                     <span class="text-base font-bold text-gray-800">ทุนคงเหลือ</span>
                     <span class="text-base font-bold text-blue-600">= ฿{{ number_format($remaining, 0) }}</span>
@@ -209,7 +236,12 @@
             <h2 class="text-lg font-bold text-gray-800 mb-3">✅ สรุป:</h2>
             <div class="space-y-2 text-sm text-gray-700">
                 <div>• ทุนตั้งต้น = <strong>฿{{ number_format($expense->amount, 0) }}</strong></div>
-                <div>• รับคืนแล้ว = <strong class="text-emerald-600">฿{{ number_format($decreasesSum, 0) }}</strong></div>
+                @if($childIncreasesSum > 0)
+                    <div>• เพิ่มทุน = <strong class="text-blue-600">+฿{{ number_format($childIncreasesSum, 0) }}</strong></div>
+                @endif
+                @if($childDecreasesSum > 0)
+                    <div>• ลดทุน/รับคืน = <strong class="text-emerald-600">-฿{{ number_format($childDecreasesSum, 0) }}</strong></div>
+                @endif
                 <div>• ทุนคงเหลือ = <strong class="text-blue-600">฿{{ number_format($remaining, 0) }}</strong></div>
                 @if($isSold)
                     <div>• ราคาขาย = <strong class="text-purple-600">฿{{ number_format($soldPrice, 0) }}</strong></div>

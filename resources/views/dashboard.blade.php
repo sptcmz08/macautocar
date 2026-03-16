@@ -1709,8 +1709,11 @@
                         @forelse($increaseExpenses as $index => $expense)
                             @php
                                 $isSold = ($expense->status ?? 'active') === 'sold';
-                                $decreasesSum = $capitalExpenses->where('parent_id', $expense->id)->sum('amount');
-                                $remaining = $expense->amount - $decreasesSum;
+                                $children = $capitalExpenses->where('parent_id', $expense->id);
+                                $childIncreases = $children->where('transaction_type', 'increase')->sum('amount');
+                                $childDecreases = $children->where('transaction_type', 'decrease')->sum('amount');
+                                $decreasesSum = $childDecreases;
+                                $remaining = $expense->amount + $childIncreases - $childDecreases;
                             @endphp
                             <tr class="hover:bg-blue-50/30 transition {{ $isSold ? 'bg-gray-50 opacity-60' : '' }}">
                                 <td class="px-4 py-4 whitespace-nowrap text-center text-gray-500 text-sm row-number-cell">
@@ -1896,8 +1899,10 @@
                                     @php
                                         $totalSoldProfit = 0;
                                         foreach ($soldExpenses as $exp) {
-                                            $dec = $capitalExpenses->where('parent_id', $exp->id)->sum('amount');
-                                            $rem = $exp->amount - $dec;
+                                            $children = $capitalExpenses->where('parent_id', $exp->id);
+                                            $childInc = $children->where('transaction_type', 'increase')->sum('amount');
+                                            $dec = $children->where('transaction_type', 'decrease')->sum('amount');
+                                            $rem = $exp->amount + $childInc - $dec;
                                             $totalSoldProfit += (($exp->sold_price ?? 0) - $rem);
                                         }
                                     @endphp

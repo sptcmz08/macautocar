@@ -1353,7 +1353,7 @@
                                     </td>
 
                                     <!-- 2. Image -->
-                                    <td class="px-2 py-3 text-center">
+                                    <td class="px-2 py-3 text-center min-w-[80px]">
                                         @if($car->images->count() > 0)
                                             <div class="relative cursor-pointer"
                                                 onclick="event.stopPropagation(); openGallery({{ $car->images->pluck('path')->map(fn($p) => '/img/' . $p)->toJson() }})">

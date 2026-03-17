@@ -1358,14 +1358,14 @@
                                             <div class="relative cursor-pointer"
                                                 onclick="event.stopPropagation(); openGallery({{ $car->images->pluck('path')->map(fn($p) => '/img/' . $p)->toJson() }})">
                                                 <img src="{{ '/img/' . $firstImage->path }}" alt="Car Image"
-                                                    class="w-16 h-16 object-contain bg-gray-50 rounded-xl shadow-sm hover:scale-110 transition-transform">
+                                                    class="w-20 h-16 object-cover rounded-xl shadow-sm hover:scale-110 transition-transform">
                                                 @if($car->images->count() > 1)
                                                     <span
                                                         class="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $car->images->count() }}</span>
                                                 @endif
                                             </div>
                                         @else
-                                            <div class="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 cursor-pointer"
+                                            <div class="w-20 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 cursor-pointer"
                                                 onclick="event.stopPropagation(); openEditModal({{ $car->id }})">
                                                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"

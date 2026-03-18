@@ -1268,8 +1268,29 @@
                 class="w-full bg-white/90 backdrop-blur-sm border-2 border-gray-200 rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md"
                 id="searchInput" oninput="filterTable()">
         </div>
-        <div class="flex items-center justify-end mb-3 px-1">
-            <a href="{{ route('stock.summary') }}" class="inline-flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">
+        <div class="flex items-center justify-between mb-3 px-1 flex-wrap gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs text-gray-500 font-medium">🏢 สาขา:</span>
+                <button onclick="filterBranch('all')" id="branchAll"
+                    class="branch-btn px-3 py-1.5 text-xs rounded-full font-bold bg-blue-500 text-white shadow-sm transition-all hover:scale-105">
+                    ทั้งหมด ({{ $cars->where('status', 'stock')->count() }})
+                </button>
+                @foreach($branches as $branch)
+                    @php $branchCount = $cars->where('status', 'stock')->where('branch_id', $branch->id)->count(); @endphp
+                    <button onclick="filterBranch('{{ $branch->id }}')" id="branch{{ $branch->id }}"
+                        class="branch-btn px-3 py-1.5 text-xs rounded-full font-bold bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 transition-all hover:scale-105">
+                        {{ $branch->name }} ({{ $branchCount }})
+                    </button>
+                @endforeach
+                @php $noBranchStockCount = $cars->where('status', 'stock')->whereNull('branch_id')->count(); @endphp
+                @if($noBranchStockCount > 0)
+                    <button onclick="filterBranch('none')" id="branchNone"
+                        class="branch-btn px-3 py-1.5 text-xs rounded-full font-bold bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 transition-all hover:scale-105">
+                        ไม่ระบุ ({{ $noBranchStockCount }})
+                    </button>
+                @endif
+            </div>
+            <a href="{{ route('stock.summary') }}" class="inline-flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors flex-shrink-0">
                 📋 สรุปสต็อกรายสาขา →
             </a>
         </div>
@@ -1344,6 +1365,7 @@
                                 @endphp
                                 <tr data-status="{{ $car->status }}"
                                     data-is-profit-stock="{{ $car->is_profit_stock ? '1' : '0' }}"
+                                    data-branch="{{ $car->branch_id ?? 'none' }}"
                                     class="table-row-premium hover:bg-blue-50/50 transition-all duration-200">
 
                                     <!-- 1. Order -->
@@ -4689,6 +4711,47 @@
                 form.action = '/refurbishments/' + refurbId;
                 form.submit();
             }
+        }
+
+        let activeBranch = 'all';
+
+        function filterBranch(branchId) {
+            activeBranch = branchId;
+
+            // Style buttons
+            document.querySelectorAll('.branch-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-500', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-gray-100', 'text-gray-700', 'border', 'border-gray-300');
+            });
+            const activeBtn = document.getElementById(branchId === 'all' ? 'branchAll' : (branchId === 'none' ? 'branchNone' : 'branch' + branchId));
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-gray-100', 'text-gray-700', 'border', 'border-gray-300');
+                activeBtn.classList.add('bg-blue-500', 'text-white', 'shadow-sm');
+            }
+
+            // First switch to stock tab to show car section
+            switchTab('car', 'stock');
+
+            // Filter rows by branch
+            document.querySelectorAll('#carTable tbody tr').forEach(row => {
+                const rowBranch = row.getAttribute('data-branch');
+                const rowStatus = row.getAttribute('data-status');
+
+                if (rowStatus !== 'stock') {
+                    row.classList.add('hidden');
+                    return;
+                }
+
+                if (branchId === 'all') {
+                    row.classList.remove('hidden');
+                } else if (branchId === 'none') {
+                    rowBranch === 'none' ? row.classList.remove('hidden') : row.classList.add('hidden');
+                } else {
+                    rowBranch === branchId ? row.classList.remove('hidden') : row.classList.add('hidden');
+                }
+            });
+
+            renumberVisibleRows();
         }
 
         function filterTable() {

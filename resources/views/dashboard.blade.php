@@ -1023,6 +1023,11 @@
                 </div>
             </a>
         </div>
+        <div class="mt-3">
+            <a href="{{ route('daily-log') }}" class="block bg-white hover:bg-blue-50 border-2 border-blue-200 rounded-xl p-3 text-center transition group">
+                <span class="text-sm font-bold text-blue-600 group-hover:text-blue-700">📋 ลิสประจำวัน — ดูรายการวันนี้ →</span>
+            </a>
+        </div>
     </div>
 
     <!-- Tabs & Main Content -->

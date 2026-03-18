@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>รายการประจำวัน - CarStock Master</title>
+    <title>ลิสประจำวัน - CarStock Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -18,196 +18,268 @@
 <body class="bg-gray-100 min-h-screen font-sans">
 
     <!-- Top Bar -->
-    <div class="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <a href="{{ route('dashboard') }}"
                 class="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 text-sm font-medium transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
-                กลับหน้าหลัก
+                กลับ
             </a>
-            <h1 class="text-lg font-bold text-gray-800">📋 รายการประจำวัน</h1>
+            <h1 class="text-lg font-bold text-gray-800">📋 ลิสประจำวัน</h1>
+            <div class="w-12"></div>
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto px-4 py-6">
+    <div class="max-w-2xl mx-auto px-4 py-5">
 
         <!-- Date Picker -->
-        <div class="bg-white rounded-xl border border-gray-200 p-4 mb-5 flex items-center gap-4 flex-wrap">
-            <label class="text-sm font-bold text-gray-700">📅 เลือกวันที่:</label>
-            <input type="date" id="dateSelect" value="{{ $date }}"
-                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                onchange="window.location.href='/daily-log?date=' + this.value">
-            <div class="flex gap-2">
-                <button onclick="changeDate(-1)"
-                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition">← ก่อนหน้า</button>
-                <button onclick="changeDate(0)"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition">วันนี้</button>
-                <button onclick="changeDate(1)"
-                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition">ถัดไป →</button>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+            <div class="flex items-center gap-3 flex-wrap">
+                <label class="text-sm font-bold text-gray-700">📅</label>
+                <input type="date" id="dateSelect" value="{{ $date }}"
+                    class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none flex-1 min-w-[130px]"
+                    onchange="window.location.href='/daily-log?date=' + this.value">
+                <div class="flex gap-1">
+                    <button onclick="changeDate(-1)"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-2 rounded-lg text-xs font-bold transition">◀</button>
+                    <button onclick="changeDate(0)"
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold transition">วันนี้</button>
+                    <button onclick="changeDate(1)"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-2 rounded-lg text-xs font-bold transition">▶</button>
+                </div>
             </div>
-            <div class="ml-auto">
-                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+        </div>
+
+        <!-- Receipt Card -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-slate-800 to-slate-700 text-white p-5 text-center">
+                @php
+                    $displayDate = \Carbon\Carbon::parse($date)->addYears(543)->format('d/m/Y');
+                    $dayName = \Carbon\Carbon::parse($date)->locale('th')->dayName;
+                @endphp
+                <h2 class="text-xl font-bold">🧾 ลิสประจำวัน</h2>
+                <p class="text-white/70 text-sm mt-1">วัน{{ $dayName }}ที่ {{ $displayDate }}</p>
+                <div class="mt-3 inline-block bg-white/20 rounded-full px-4 py-1 text-sm font-bold">
                     {{ $totalEntries }} รายการ
-                </span>
+                </div>
             </div>
-        </div>
 
-        <!-- Date Title -->
-        <div class="text-center mb-5">
-            @php
-                $displayDate = \Carbon\Carbon::parse($date)->addYears(543)->format('d/m/Y');
-                $dayName = \Carbon\Carbon::parse($date)->locale('th')->dayName;
-            @endphp
-            <h2 class="text-xl font-bold text-gray-800">วัน{{ $dayName }}ที่ {{ $displayDate }}</h2>
-            <div class="w-16 h-1 bg-blue-500 mx-auto mt-2 rounded-full"></div>
-        </div>
+            <!-- Body -->
+            <div class="p-5">
+                @if($totalEntries === 0)
+                    <div class="text-center py-10">
+                        <div class="text-4xl mb-3">📭</div>
+                        <p class="text-gray-400 text-lg font-medium">ไม่มีรายการในวันนี้</p>
+                        <p class="text-gray-300 text-sm mt-1">ลองเลือกวันอื่นดูครับ</p>
+                    </div>
+                @else
+                    @php $itemNo = 0; @endphp
 
-        @if($totalEntries === 0)
-            <div class="bg-white rounded-xl border border-gray-200 p-10 text-center">
-                <div class="text-4xl mb-3">📭</div>
-                <p class="text-gray-500 text-lg font-medium">ไม่มีรายการในวันนี้</p>
-                <p class="text-gray-400 text-sm mt-1">ลองเลือกวันอื่นดูครับ</p>
-            </div>
-        @endif
+                    {{-- ===== จ่ายออก (Expenses) ===== --}}
+                    @if($cars->count() > 0 || $parts->count() > 0 || $capitalExpenses->count() > 0
+                        || $capitalChildren->where('transaction_type', 'increase')->count() > 0
+                        || $necessaryExpenses->count() > 0 || $refurbishments->count() > 0
+                        || $personalTransactions->where('type', 'expense')->count() > 0)
+                        <div class="mb-6">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                <h3 class="text-sm font-bold text-red-700 uppercase tracking-wide">💸 จ่ายออก</h3>
+                            </div>
 
-        <!-- 🚗 Cars -->
-        @if($cars->count() > 0)
-        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-            <h3 class="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2">
-                🚗 รถยนต์ <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">{{ $cars->count() }}</span>
-            </h3>
-            <div class="space-y-3">
-                @foreach($cars as $car)
-                <div class="flex items-center gap-3 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-                    @if($car->images->first())
-                        <img src="{{ '/img/' . $car->images->first()->path }}" alt=""
-                            class="w-14 h-14 object-contain bg-gray-50 rounded-lg border flex-shrink-0">
-                    @else
-                        <div class="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">🚗</div>
+                            <div class="space-y-0 divide-y divide-gray-100">
+                                {{-- Cars --}}
+                                @foreach($cars as $car)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">🚗 {{ $car->brand }} {{ $car->model }}</div>
+                                            <div class="text-xs text-gray-500">{{ $car->color }} • ปี{{ $car->year }} • {{ $car->license_plate }}</div>
+                                        </div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($car->cost_price, 0) }}</div>
+                                    </div>
+                                @endforeach
+
+                                {{-- Parts --}}
+                                @foreach($parts as $part)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">🔧 {{ $part->name }}</div>
+                                            <div class="text-xs text-gray-500">จำนวน {{ $part->quantity }} ชิ้น × ฿{{ number_format($part->price, 0) }}</div>
+                                        </div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($part->price * $part->quantity, 0) }}</div>
+                                    </div>
+                                @endforeach
+
+                                {{-- Capital Expenses (new parent) --}}
+                                @foreach($capitalExpenses as $exp)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">💰 {{ $exp->name }}</div>
+                                            <div class="text-xs text-gray-500">ทุนอื่นๆ (ใหม่)</div>
+                                        </div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($exp->amount, 0) }}</div>
+                                    </div>
+                                @endforeach
+
+                                {{-- Capital Children: เพิ่มทุน --}}
+                                @foreach($capitalChildren->where('transaction_type', 'increase') as $child)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">📈 {{ $child->name }}</div>
+                                            <div class="text-xs text-gray-500">เพิ่มทุน → {{ $child->parent->name ?? '-' }}</div>
+                                        </div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($child->amount, 0) }}</div>
+                                    </div>
+                                @endforeach
+
+                                {{-- Refurbishments --}}
+                                @foreach($refurbishments as $ref)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">🔨 {{ $ref->description ?? 'ปรับสภาพ' }}</div>
+                                            <div class="text-xs text-gray-500">รถ: {{ $ref->car->brand ?? '' }} {{ $ref->car->model ?? '' }}</div>
+                                        </div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($ref->cost, 0) }}</div>
+                                    </div>
+                                @endforeach
+
+                                {{-- Necessary Expenses --}}
+                                @foreach($necessaryExpenses as $nec)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">🧾 {{ $nec->name }}</div>
+                                            @if($nec->description)
+                                                <div class="text-xs text-gray-500">{{ $nec->description }}</div>
+                                            @endif
+                                        </div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($nec->amount, 0) }}</div>
+                                    </div>
+                                @endforeach
+
+                                {{-- Personal Expense --}}
+                                @foreach($personalTransactions->where('type', 'expense') as $pt)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">💳 {{ $pt->description ?? 'ส่วนตัว' }}</div>
+                                            <div class="text-xs text-gray-500">บัญชีส่วนตัว (จ่าย)</div>
+                                        </div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($pt->amount, 0) }}</div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Subtotal: จ่ายออก -->
+                            <div class="flex justify-between items-center bg-red-50 rounded-lg px-4 py-3 mt-2 border border-red-100">
+                                <span class="text-sm font-bold text-red-700">รวมจ่ายออก</span>
+                                <span class="text-base font-bold text-red-600">-฿{{ number_format($totalExpense, 0) }}</span>
+                            </div>
+                        </div>
                     @endif
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-bold text-gray-800 truncate">{{ $car->brand }} {{ $car->model }}</div>
-                        <div class="text-xs text-gray-500">{{ $car->color }} • {{ $car->year }} • {{ $car->license_plate }}</div>
-                    </div>
-                    <div class="text-right flex-shrink-0">
-                        <div class="text-sm font-bold text-blue-600">฿{{ number_format($car->cost_price, 0) }}</div>
-                        <span class="text-xs px-2 py-0.5 rounded-full font-bold
-                            {{ $car->status === 'stock' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700' }}">
-                            {{ $car->status === 'stock' ? 'สต็อก' : 'ขายแล้ว' }}
-                        </span>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
 
-        <!-- 🔧 Parts -->
-        @if($parts->count() > 0)
-        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-            <h3 class="text-lg font-bold text-cyan-700 mb-3 flex items-center gap-2">
-                🔧 อะไหล่ <span class="bg-cyan-100 text-cyan-800 text-xs px-2 py-0.5 rounded-full">{{ $parts->count() }}</span>
-            </h3>
-            <div class="space-y-3">
-                @foreach($parts as $part)
-                <div class="flex items-center gap-3 p-3 bg-cyan-50/50 rounded-lg border border-cyan-100">
-                    <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">🔧</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-bold text-gray-800 truncate">{{ $part->name }}</div>
-                        <div class="text-xs text-gray-500">จำนวน {{ $part->quantity }} ชิ้น</div>
-                    </div>
-                    <div class="text-sm font-bold text-cyan-600">฿{{ number_format($part->price * $part->quantity, 0) }}</div>
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
+                    {{-- ===== รับเข้า (Income) ===== --}}
+                    @if($soldCars->count() > 0 || $capitalChildren->where('transaction_type', 'decrease')->count() > 0
+                        || $personalTransactions->where('type', 'income')->count() > 0)
+                        <div class="mb-6">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                <h3 class="text-sm font-bold text-emerald-700 uppercase tracking-wide">💰 รับเข้า</h3>
+                            </div>
 
-        <!-- 💰 Capital Expenses -->
-        @if($capitalExpenses->count() > 0)
-        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-            <h3 class="text-lg font-bold text-orange-700 mb-3 flex items-center gap-2">
-                💰 ทุนอื่นๆ <span class="bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded-full">{{ $capitalExpenses->count() }}</span>
-            </h3>
-            <div class="space-y-3">
-                @foreach($capitalExpenses as $exp)
-                <div class="flex items-center gap-3 p-3 bg-orange-50/50 rounded-lg border border-orange-100">
-                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">💰</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-bold text-gray-800 truncate">{{ $exp->name }}</div>
-                        <div class="text-xs text-gray-500">
-                            {{ $exp->transaction_type === 'increase' ? '📈 เพิ่มทุน' : '📉 ลดทุน' }}
-                            @if($exp->description) • {{ $exp->description }} @endif
+                            <div class="space-y-0 divide-y divide-gray-100">
+                                {{-- Sold Cars --}}
+                                @foreach($soldCars as $sold)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">🚗 ขาย {{ $sold->brand }} {{ $sold->model }}</div>
+                                            <div class="text-xs text-gray-500">{{ $sold->license_plate }}</div>
+                                        </div>
+                                        <div class="text-sm font-bold text-emerald-600 flex-shrink-0">+฿{{ number_format($sold->sold_price, 0) }}</div>
+                                    </div>
+                                @endforeach
+
+                                {{-- Capital Children: ลดทุน/รับคืน --}}
+                                @foreach($capitalChildren->where('transaction_type', 'decrease') as $child)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">📉 {{ $child->name }}</div>
+                                            <div class="text-xs text-gray-500">ลดทุน/รับคืน ← {{ $child->parent->name ?? '-' }}</div>
+                                        </div>
+                                        <div class="text-sm font-bold text-emerald-600 flex-shrink-0">+฿{{ number_format($child->amount, 0) }}</div>
+                                    </div>
+                                @endforeach
+
+                                {{-- Personal Income --}}
+                                @foreach($personalTransactions->where('type', 'income') as $pt)
+                                    @php $itemNo++; @endphp
+                                    <div class="flex items-start gap-3 py-3">
+                                        <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-gray-800">💳 {{ $pt->description ?? 'ส่วนตัว' }}</div>
+                                            <div class="text-xs text-gray-500">บัญชีส่วนตัว (รับ)</div>
+                                        </div>
+                                        <div class="text-sm font-bold text-emerald-600 flex-shrink-0">+฿{{ number_format($pt->amount, 0) }}</div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Subtotal: รับเข้า -->
+                            <div class="flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-3 mt-2 border border-emerald-100">
+                                <span class="text-sm font-bold text-emerald-700">รวมรับเข้า</span>
+                                <span class="text-base font-bold text-emerald-600">+฿{{ number_format($totalIncome, 0) }}</span>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- ===== Grand Total ===== --}}
+                    <div class="border-t-2 border-dashed border-gray-300 pt-4 mt-2">
+                        <div class="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 text-white">
+                            <div class="grid grid-cols-2 gap-3 text-center mb-3">
+                                <div class="bg-red-500/20 rounded-lg py-2 px-3">
+                                    <p class="text-xs text-red-200">จ่ายออก</p>
+                                    <p class="text-base font-bold text-red-300">-฿{{ number_format($totalExpense, 0) }}</p>
+                                </div>
+                                <div class="bg-emerald-500/20 rounded-lg py-2 px-3">
+                                    <p class="text-xs text-emerald-200">รับเข้า</p>
+                                    <p class="text-base font-bold text-emerald-300">+฿{{ number_format($totalIncome, 0) }}</p>
+                                </div>
+                            </div>
+                            @php $netFlow = $totalIncome - $totalExpense; @endphp
+                            <div class="text-center border-t border-white/20 pt-3">
+                                <p class="text-xs text-white/60">สุทธิวันนี้</p>
+                                <p class="text-2xl font-bold {{ $netFlow >= 0 ? 'text-emerald-300' : 'text-red-300' }}">
+                                    {{ $netFlow >= 0 ? '+' : '' }}฿{{ number_format($netFlow, 0) }}
+                                </p>
+                            </div>
                         </div>
                     </div>
-                    <div class="text-sm font-bold text-orange-600">฿{{ number_format($exp->amount, 0) }}</div>
-                </div>
-                @endforeach
+                @endif
             </div>
         </div>
-        @endif
-
-        <!-- 💰 Capital Children (เพิ่ม/ลดทุน) -->
-        @if($capitalChildren->count() > 0)
-        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-            <h3 class="text-lg font-bold text-amber-700 mb-3 flex items-center gap-2">
-                📊 เพิ่ม/ลดทุน <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">{{ $capitalChildren->count() }}</span>
-            </h3>
-            <div class="space-y-3">
-                @foreach($capitalChildren as $child)
-                <div class="flex items-center gap-3 p-3 bg-amber-50/50 rounded-lg border border-amber-100">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0
-                        {{ $child->transaction_type === 'increase' ? 'bg-blue-100' : 'bg-emerald-100' }}">
-                        {{ $child->transaction_type === 'increase' ? '📈' : '📉' }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-bold text-gray-800 truncate">{{ $child->name }}</div>
-                        <div class="text-xs text-gray-500">
-                            <span class="px-1.5 py-0.5 rounded-full text-xs font-bold
-                                {{ $child->transaction_type === 'increase' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700' }}">
-                                {{ $child->transaction_type === 'increase' ? 'เพิ่มทุน' : 'ลดทุน' }}
-                            </span>
-                            → {{ $child->parent->name ?? '-' }}
-                        </div>
-                    </div>
-                    <div class="text-sm font-bold {{ $child->transaction_type === 'increase' ? 'text-blue-600' : 'text-emerald-600' }}">
-                        {{ $child->transaction_type === 'increase' ? '+' : '-' }}฿{{ number_format($child->amount, 0) }}
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
-
-        <!-- 🧾 Necessary Expenses -->
-        @if($necessaryExpenses->count() > 0)
-        <div class="bg-white rounded-xl border border-gray-200 p-5 mb-4">
-            <h3 class="text-lg font-bold text-red-700 mb-3 flex items-center gap-2">
-                🧾 ค่าใช้จ่ายที่จำเป็น <span class="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full">{{ $necessaryExpenses->count() }}</span>
-            </h3>
-            <div class="space-y-3">
-                @foreach($necessaryExpenses as $nec)
-                <div class="flex items-center gap-3 p-3 bg-red-50/50 rounded-lg border border-red-100">
-                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">🧾</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-bold text-gray-800 truncate">{{ $nec->name }}</div>
-                        @if($nec->description)
-                            <div class="text-xs text-gray-500">{{ $nec->description }}</div>
-                        @endif
-                    </div>
-                    <div class="text-sm font-bold text-red-600">-฿{{ number_format($nec->amount, 0) }}</div>
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
 
         <!-- Back Button -->
-        <div class="flex gap-3 mb-6 mt-6">
+        <div class="mt-5 mb-8">
             <a href="{{ route('dashboard') }}"
-                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 rounded-xl text-center text-sm transition">
+                class="block bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 rounded-xl text-center text-sm transition">
                 ← กลับ Dashboard
             </a>
         </div>

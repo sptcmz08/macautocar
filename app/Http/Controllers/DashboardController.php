@@ -533,23 +533,44 @@ class DashboardController extends Controller
     {
         $date = $request->get('date', now()->format('Y-m-d'));
 
-        // Fetch all records created on this date
-        $cars = Car::whereDate('created_at', $date)->orderBy('created_at', 'desc')->get();
+        // Fetch all records created/dated on this date
+        $cars = Car::with('images')->whereDate('created_at', $date)->orderBy('created_at', 'desc')->get();
+        $soldCars = Car::whereDate('sold_date', $date)->where('status', 'sold')->orderBy('sold_date', 'desc')->get();
         $parts = Part::whereDate('created_at', $date)->orderBy('created_at', 'desc')->get();
         $capitalExpenses = \App\Models\CapitalExpense::whereDate('created_at', $date)
             ->whereNull('parent_id')
             ->orderBy('created_at', 'desc')->get();
-        $capitalChildren = \App\Models\CapitalExpense::whereDate('created_at', $date)
+        $capitalChildren = \App\Models\CapitalExpense::with('parent')->whereDate('created_at', $date)
             ->whereNotNull('parent_id')
             ->orderBy('created_at', 'desc')->get();
         $necessaryExpenses = NecessaryExpense::whereDate('date', $date)->orderBy('date', 'desc')->get();
+        $refurbishments = \App\Models\Refurbishment::with('car')->whereDate('created_at', $date)
+            ->orderBy('created_at', 'desc')->get();
+        $personalTransactions = \App\Models\PersonalTransaction::whereDate('created_at', $date)
+            ->orderBy('created_at', 'desc')->get();
 
-        $totalEntries = $cars->count() + $parts->count() + $capitalExpenses->count()
-            + $capitalChildren->count() + $necessaryExpenses->count();
+        // Calculate totals
+        $totalExpense = $cars->sum('cost_price')
+            + $parts->sum(fn($p) => $p->price * $p->quantity)
+            + $capitalExpenses->sum('amount')
+            + $capitalChildren->where('transaction_type', 'increase')->sum('amount')
+            + $necessaryExpenses->sum('amount')
+            + $refurbishments->sum('cost')
+            + $personalTransactions->where('type', 'expense')->sum('amount');
+
+        $totalIncome = $soldCars->sum('sold_price')
+            + $capitalChildren->where('transaction_type', 'decrease')->sum('amount')
+            + $personalTransactions->where('type', 'income')->sum('amount');
+
+        $totalEntries = $cars->count() + $soldCars->count() + $parts->count()
+            + $capitalExpenses->count() + $capitalChildren->count()
+            + $necessaryExpenses->count() + $refurbishments->count()
+            + $personalTransactions->count();
 
         return view('daily-log', compact(
-            'date', 'cars', 'parts', 'capitalExpenses', 'capitalChildren',
-            'necessaryExpenses', 'totalEntries'
+            'date', 'cars', 'soldCars', 'parts', 'capitalExpenses', 'capitalChildren',
+            'necessaryExpenses', 'refurbishments', 'personalTransactions',
+            'totalEntries', 'totalExpense', 'totalIncome'
         ));
     }
 }

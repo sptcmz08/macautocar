@@ -550,12 +550,12 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')->get();
 
         // Calculate totals
-        $totalExpense = $cars->sum('cost_price')
-            + $parts->sum(fn($p) => $p->price * $p->quantity)
+        $totalExpense = $cars->sum('purchase_price')
+            + $parts->sum(fn($p) => $p->unit_price * $p->quantity)
             + $capitalExpenses->sum('amount')
             + $capitalChildren->where('transaction_type', 'increase')->sum('amount')
             + $necessaryExpenses->sum('amount')
-            + $refurbishments->sum('cost')
+            + $refurbishments->sum('amount')
             + $personalTransactions->where('type', 'expense')->sum('amount');
 
         $totalIncome = $soldCars->sum('sold_price')

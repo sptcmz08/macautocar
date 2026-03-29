@@ -99,7 +99,7 @@
                                             <div class="text-sm font-bold text-gray-800">🚗 {{ $car->brand }} {{ $car->model }}</div>
                                             <div class="text-xs text-gray-500">{{ $car->color }} • ปี{{ $car->year }} • {{ $car->license_plate }}</div>
                                         </div>
-                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($car->cost_price, 0) }}</div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($car->purchase_price, 0) }}</div>
                                     </div>
                                 @endforeach
 
@@ -110,9 +110,9 @@
                                         <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
                                         <div class="flex-1 min-w-0">
                                             <div class="text-sm font-bold text-gray-800">🔧 {{ $part->name }}</div>
-                                            <div class="text-xs text-gray-500">จำนวน {{ $part->quantity }} ชิ้น × ฿{{ number_format($part->price, 0) }}</div>
+                                            <div class="text-xs text-gray-500">จำนวน {{ $part->quantity }} ชิ้น × ฿{{ number_format($part->unit_price, 0) }}</div>
                                         </div>
-                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($part->price * $part->quantity, 0) }}</div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($part->unit_price * $part->quantity, 0) }}</div>
                                     </div>
                                 @endforeach
 
@@ -148,10 +148,10 @@
                                     <div class="flex items-start gap-3 py-3">
                                         <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
                                         <div class="flex-1 min-w-0">
-                                            <div class="text-sm font-bold text-gray-800">🔨 {{ $ref->description ?? 'ปรับสภาพ' }}</div>
+                                            <div class="text-sm font-bold text-gray-800">🔨 {{ $ref->name ?? 'ปรับสภาพ' }}</div>
                                             <div class="text-xs text-gray-500">รถ: {{ $ref->car->brand ?? '' }} {{ $ref->car->model ?? '' }}</div>
                                         </div>
-                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($ref->cost, 0) }}</div>
+                                        <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($ref->amount, 0) }}</div>
                                     </div>
                                 @endforeach
 
@@ -176,7 +176,7 @@
                                     <div class="flex items-start gap-3 py-3">
                                         <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
                                         <div class="flex-1 min-w-0">
-                                            <div class="text-sm font-bold text-gray-800">💳 {{ $pt->description ?? 'ส่วนตัว' }}</div>
+                                            <div class="text-sm font-bold text-gray-800">💳 {{ $pt->name ?? 'ส่วนตัว' }}</div>
                                             <div class="text-xs text-gray-500">บัญชีส่วนตัว (จ่าย)</div>
                                         </div>
                                         <div class="text-sm font-bold text-red-600 flex-shrink-0">-฿{{ number_format($pt->amount, 0) }}</div>
@@ -234,7 +234,7 @@
                                     <div class="flex items-start gap-3 py-3">
                                         <span class="text-xs text-gray-400 font-bold mt-1 w-5 flex-shrink-0">{{ $itemNo }}.</span>
                                         <div class="flex-1 min-w-0">
-                                            <div class="text-sm font-bold text-gray-800">💳 {{ $pt->description ?? 'ส่วนตัว' }}</div>
+                                            <div class="text-sm font-bold text-gray-800">💳 {{ $pt->name ?? 'ส่วนตัว' }}</div>
                                             <div class="text-xs text-gray-500">บัญชีส่วนตัว (รับ)</div>
                                         </div>
                                         <div class="text-sm font-bold text-emerald-600 flex-shrink-0">+฿{{ number_format($pt->amount, 0) }}</div>
